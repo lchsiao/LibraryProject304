@@ -7,16 +7,18 @@ import java.sql.SQLException;
 public class LibrarySQLUtil {
 
 	// db fields
-	private static Connection conn = getConnection();
 	private static String CONNECT_URL = "jdbc:oracle:thin:@localhost:1521:ug";
 	private static String USER = "..."; 
 	private static String PASSWORD = "...";
 
+	private static Connection conn;
+	
 	// command strings
 	public static final String SUCCESS_STRING = "SUCCESS";
 	
 	static {
 		loadDriver();
+		conn = getConnection();
 	}
 	
 	public static void loadDriver() {
