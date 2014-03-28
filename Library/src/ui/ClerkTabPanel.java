@@ -3,16 +3,17 @@ import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
-import javax.management.InstanceAlreadyExistsException;
 import javax.swing.Box;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JPasswordField;
 import javax.swing.JTextField;
 import javax.swing.border.EmptyBorder;
 
@@ -39,9 +40,8 @@ public class ClerkTabPanel extends UserTabPanel {
 	private static final String REMOVE_ITEM_ACTION = "REMOVEITEM";
 
 	private JPanel checkOutItemsPanelTop;
-	private JTextField idField;
+	private JTextField bidField;
 	private List<JTextField> itemsField;
-
 
 	@Override
 	protected void initializeCards() {
@@ -65,6 +65,7 @@ public class ClerkTabPanel extends UserTabPanel {
 
 	}
 
+	
 	private void createAddBorrowerPanel() {
 
 		JPanel addBorrowerPanel = new JPanel(new BorderLayout());
@@ -78,7 +79,7 @@ public class ClerkTabPanel extends UserTabPanel {
 		addBorrowerPanelTop.add(nameField);
 
 		JLabel passwordLabel = new JLabel("Password:");
-		passwordField = new JTextField();
+		passwordField = new JPasswordField();
 		addBorrowerPanelTop.add(passwordLabel);
 		addBorrowerPanelTop.add(passwordField);
 
@@ -119,35 +120,7 @@ public class ClerkTabPanel extends UserTabPanel {
 
 	}
 
-	private boolean addBorrower() {
-
-		String name = nameField.getText();
-		String password = passwordField.getText();
-		String address = addressField.getText();
-		String phone = phoneField.getText();
-		String email = emailField.getText();
-		String sinOrStdNo = sinOrStNoField.getText();
-		String type = typeField.getItemAt(typeField.getSelectedIndex());
-
-		if (name.isEmpty() || password.isEmpty() || address.isEmpty() || phone.isEmpty() || email.isEmpty() ||
-				sinOrStdNo.isEmpty() || type.isEmpty()) {
-
-			JOptionPane.showMessageDialog(this, "Error. One or more fields empty. All fields must have values.", "Error",
-					JOptionPane.ERROR_MESSAGE);
-
-			return false;
-		}
-
-		String result = LibrarySQLUtil.addBorrower(name, password, address, phone, email, sinOrStdNo, type);
-		if (LibrarySQLUtil.SUCCESS_STRING.equals(result)) {
-			JOptionPane.showMessageDialog(this, "Success. New borrower added.");
-		} else {
-			JOptionPane.showMessageDialog(this, result, "Error", JOptionPane.ERROR_MESSAGE);
-		}
-
-		return true;
-	}
-
+	
 	private void createCheckOutPanel() {
 		
 		JPanel checkOutItemsPanel = new JPanel(new BorderLayout());
@@ -155,10 +128,10 @@ public class ClerkTabPanel extends UserTabPanel {
 		checkOutItemsPanelTop = new JPanel(new GridLayout(0, 3, 10, 10));
 		checkOutItemsPanelTop.setBorder(new EmptyBorder(10, 10, 10, 10));
 
-		JLabel idLabel = new JLabel("Card Number:");
-		idField = new JTextField();
-		checkOutItemsPanelTop.add(idLabel);
-		checkOutItemsPanelTop.add(idField);
+		JLabel bidLabel = new JLabel("Card Number:");
+		bidField = new JTextField();
+		checkOutItemsPanelTop.add(bidLabel);
+		checkOutItemsPanelTop.add(bidField);
 		checkOutItemsPanelTop.add(Box.createHorizontalGlue());
 
 		JButton itemsButton = new JButton("Add Item");
@@ -181,6 +154,36 @@ public class ClerkTabPanel extends UserTabPanel {
 		this.addCard("Check-out Items", checkOutItemsPanel);
 
 	}
+	
+
+	private boolean addBorrower() {
+
+		String name = nameField.getText();
+		String password = passwordField.getText();
+		String address = addressField.getText();
+		String phone = phoneField.getText();
+		String email = emailField.getText();
+		String sinOrStdNo = sinOrStNoField.getText();
+		String type = typeField.getItemAt(typeField.getSelectedIndex());
+
+		if (name.isEmpty() || password.isEmpty() || address.isEmpty() || phone.isEmpty() || email.isEmpty() ||
+				sinOrStdNo.isEmpty() || type.isEmpty()) {
+
+			showDefaultError();
+
+			return false;
+		}
+
+		String result = LibrarySQLUtil.addBorrower(name, password, address, phone, email, sinOrStdNo, type);
+		if (LibrarySQLUtil.SUCCESS_STRING.equals(result)) {
+			JOptionPane.showMessageDialog(this, "Success. New borrower added.");
+		} else {
+			JOptionPane.showMessageDialog(this, result, "Error", JOptionPane.ERROR_MESSAGE);
+		}
+
+		return true;
+	}
+	
 	
 	private void addItem() {
 		
@@ -205,6 +208,7 @@ public class ClerkTabPanel extends UserTabPanel {
 		
 		checkOutItemsPanelTop.getParent().validate();
 	}
+	
 	
 	private void removeItem(PositionAwareButton source) {
 		
@@ -233,11 +237,40 @@ public class ClerkTabPanel extends UserTabPanel {
 		checkOutItemsPanelTop.getParent().validate();
 	}
 	
-	private void checkOutItems() {
-		// TODO Auto-generated method stub
+	private boolean checkOutItems() {
 		
+		String bid = bidField.getText();
+		List<String> items = new ArrayList<>();
+		boolean itemIsEmpty = false;
+		
+		for (JTextField field : itemsField) {
+			String text = field.getText();
+			
+			if (field.getText().isEmpty()) {
+				itemIsEmpty = true;
+				break;
+			}
+			items.add(text);
+		}
+
+		if (bid.isEmpty() || itemIsEmpty || items.isEmpty()) {
+
+			showDefaultError();
+			
+			return false;
+		}
+
+		String result = LibrarySQLUtil.checkOutItems(bid, items);
+		if (LibrarySQLUtil.SUCCESS_STRING.equals(result)) {
+			JOptionPane.showMessageDialog(this, "Success. All items checked out.");
+		} else {
+			JOptionPane.showMessageDialog(this, result, "Error", JOptionPane.ERROR_MESSAGE);
+		}
+
+		return true;
 	}
 
+	
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		

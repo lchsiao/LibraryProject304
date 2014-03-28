@@ -2,6 +2,7 @@ package sql;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.util.List;
 
 
 public class LibrarySQLUtil {
@@ -20,6 +21,8 @@ public class LibrarySQLUtil {
 		loadDriver();
 		conn = getConnection();
 	}
+	
+	private LibrarySQLUtil(){}
 	
 	public static void loadDriver() {
 		try 
@@ -57,6 +60,13 @@ public class LibrarySQLUtil {
 
 	public static String addBorrower(String name, String password, String address, String phone,
 			String email, String sinOrStdNo, String type) {
+		//TODO
+		// conn.prepareStatement... etc...
+		
+		return SUCCESS_STRING;
+	}
+	
+	public static String checkOutItems(String bid, List<String> items) {
 		//TODO
 		// conn.prepareStatement... etc...
 		

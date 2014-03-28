@@ -10,6 +10,7 @@ import java.awt.event.ItemListener;
 
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
 @SuppressWarnings("serial")
@@ -54,6 +55,11 @@ public abstract class UserTabPanel extends JPanel implements ActionListener {
     protected void addCard(String name, Component c) {
     	comboBox.addItem(name);
     	cards.add(name, c);
+    }
+    
+    protected void showDefaultError() {
+    	JOptionPane.showMessageDialog(this, "Error. One or more fields empty. All fields must have values.", "Error",
+				JOptionPane.ERROR_MESSAGE);
     }
 
 }
