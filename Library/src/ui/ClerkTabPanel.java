@@ -3,7 +3,7 @@ import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
-import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 import javax.swing.Box;
@@ -163,7 +163,7 @@ public class ClerkTabPanel extends UserTabPanel {
 		JButton itemsButton = new JButton("Add Item");
 		itemsButton.addActionListener(this);
 		itemsButton.setActionCommand(ADD_ITEM_ACTION);
-		itemsField = new ArrayList<JTextField>();
+		itemsField = new LinkedList<JTextField>();
 		checkOutItemsPanelTop.add(itemsButton);
 		JTextField firstItem = new JTextField();
 		itemsField.add(firstItem);
@@ -193,21 +193,30 @@ public class ClerkTabPanel extends UserTabPanel {
 		checkOutItemsPanelTop.add(Box.createHorizontalGlue());
 		JTextField newField = new JTextField();
 		checkOutItemsPanelTop.add(newField);
+		
 		PositionAwareButton remove = new PositionAwareButton("X");
 		remove.setPosition(position);
 		remove.setActionCommand(REMOVE_ITEM_ACTION);
 		remove.addActionListener(this);
+		
 		checkOutItemsPanelTop.add(remove);
 		itemsField.add(newField);
+		
 		checkOutItemsPanelTop.getParent().validate();
 	}
 	
 	private void removeItem(PositionAwareButton source) {
 		
-		int position = source.getPosition() - 2;
-		checkOutItemsPanelTop.remove(position);
-		checkOutItemsPanelTop.remove(position);
-		checkOutItemsPanelTop.remove(position);
+		int buttonPosition = source.getPosition();
+		int rowStartPosition = buttonPosition - 2;
+		int listPosition = buttonPosition/3 - 1;
+		
+		itemsField.remove(listPosition);
+		
+		checkOutItemsPanelTop.remove(rowStartPosition);	
+		checkOutItemsPanelTop.remove(rowStartPosition);
+		checkOutItemsPanelTop.remove(rowStartPosition);
+		
 		checkOutItemsPanelTop.getParent().validate();
 	}
 	
