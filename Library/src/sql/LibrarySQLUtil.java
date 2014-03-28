@@ -60,7 +60,9 @@ public class LibrarySQLUtil {
 		
 		return null;
 	}
-
+    
+    
+    public static String addBorrower(String name, String password, String address, String phone, String email, String sinOrStdNo, String type) {
 		try {
 			PreparedStatement ps = conn.prepareStatement("INSERT INTO borrower VALUES (?,?,?,?,?,?,?)");
 			ps.setString(1, name);
