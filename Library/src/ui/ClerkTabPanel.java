@@ -6,6 +6,7 @@ import java.awt.event.ActionEvent;
 import java.util.LinkedList;
 import java.util.List;
 
+import javax.management.InstanceAlreadyExistsException;
 import javax.swing.Box;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
@@ -209,13 +210,25 @@ public class ClerkTabPanel extends UserTabPanel {
 		
 		int buttonPosition = source.getPosition();
 		int rowStartPosition = buttonPosition - 2;
-		int listPosition = buttonPosition/3 - 1;
+		int listPosition = buttonPosition/3 - 2;
 		
 		itemsField.remove(listPosition);
 		
 		checkOutItemsPanelTop.remove(rowStartPosition);	
 		checkOutItemsPanelTop.remove(rowStartPosition);
 		checkOutItemsPanelTop.remove(rowStartPosition);
+		
+		for (Component c : checkOutItemsPanelTop.getComponents()) {
+			
+			if (c instanceof PositionAwareButton) {
+				final PositionAwareButton b = (PositionAwareButton) c;
+				final int oldPosition = b.getPosition();
+				
+				if (oldPosition > buttonPosition) {
+					b.setPosition(oldPosition-3);
+				}
+			}
+		}
 		
 		checkOutItemsPanelTop.getParent().validate();
 	}
