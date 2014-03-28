@@ -9,13 +9,13 @@ public class LibrarySQLUtil {
 
 	// db fields
 	private static final String CONNECT_URL = "jdbc:oracle:thin:@localhost:1521:ug";
-	private static final String USER = "..."; 
-	private static final String PASSWORD = "...";
+	private static final String USER = "root"; 
+	private static final String PASSWORD = "1234";
 
 	private static Connection conn;
 	
 	// command strings
-	public static final String SUCCESS_STRING = "SUCCESS";
+	public static final String SUCCESS_STRING = "Success. ";
 	
 	static {
 		loadDriver();
@@ -27,7 +27,7 @@ public class LibrarySQLUtil {
 	public static void loadDriver() {
 		try 
 		{
-			// Load the Oracle JDBC driver
+			// Load the JDBC driver
 			DriverManager.registerDriver(new oracle.jdbc.driver.OracleDriver());
 		}
 		catch (SQLException ex)
@@ -58,17 +58,21 @@ public class LibrarySQLUtil {
 		return null;
 	}
 
+
 	public static String addBorrower(String name, String password, String address, String phone,
 			String email, String sinOrStdNo, String type) {
 		//TODO
 		// conn.prepareStatement... etc...
+		// return SUCCESS_STRING + "New borrower <bid> added." on success, SQL error message if failed
 		
 		return SUCCESS_STRING;
 	}
 	
+
 	public static String checkOutItems(String bid, List<String> items) {
 		//TODO
 		// conn.prepareStatement... etc...
+		// return SUCCESS_STRING + "Items <firstItem>, <secondItem>... checked-out." on success, SQL error message if failed
 		
 		return SUCCESS_STRING;
 	}
