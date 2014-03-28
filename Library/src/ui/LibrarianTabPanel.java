@@ -23,7 +23,7 @@ public class LibrarianTabPanel extends UserTabPanel {
 
 		//TODO
 		
-		this.addCard("Search Books", createAddBookPanel);
+		this.addCard("Add Book", createAddBookPanel);
 	}
 
 
