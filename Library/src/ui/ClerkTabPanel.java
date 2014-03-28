@@ -182,8 +182,8 @@ public class ClerkTabPanel extends UserTabPanel {
 		}
 
 		String result = LibrarySQLUtil.addBorrower(name, password, address, phone, email, sinOrStdNo, type);
-		if (LibrarySQLUtil.SUCCESS_STRING.equals(result)) {
-			JOptionPane.showMessageDialog(this, "Success. New borrower added.");
+		if (result.contains(LibrarySQLUtil.SUCCESS_STRING)) {
+			JOptionPane.showMessageDialog(this, result);
 		} else {
 			JOptionPane.showMessageDialog(this, result, "Error", JOptionPane.ERROR_MESSAGE);
 		}
@@ -268,8 +268,8 @@ public class ClerkTabPanel extends UserTabPanel {
 		}
 
 		String result = LibrarySQLUtil.checkOutItems(bid, items);
-		if (LibrarySQLUtil.SUCCESS_STRING.equals(result)) {
-			JOptionPane.showMessageDialog(this, "Success. All items checked out.");
+		if (result.contains(LibrarySQLUtil.SUCCESS_STRING)) {
+			JOptionPane.showMessageDialog(this, result);
 		} else {
 			JOptionPane.showMessageDialog(this, result, "Error", JOptionPane.ERROR_MESSAGE);
 		}
