@@ -7,9 +7,9 @@ import java.sql.SQLException;
 public class LibrarySQLUtil {
 
 	// db fields
-	private static String CONNECT_URL = "jdbc:oracle:thin:@localhost:1521:ug";
-	private static String USER = "..."; 
-	private static String PASSWORD = "...";
+	private static final String CONNECT_URL = "jdbc:oracle:thin:@localhost:1521:ug";
+	private static final String USER = "..."; 
+	private static final String PASSWORD = "...";
 
 	private static Connection conn;
 	
