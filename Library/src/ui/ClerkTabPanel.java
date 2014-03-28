@@ -46,26 +46,13 @@ public class ClerkTabPanel extends UserTabPanel {
 	@Override
 	protected void initializeCards() {
 
-		// add borrower function
 		createAddBorrowerPanel();
-
-		// check out items function
 		createCheckOutPanel();
-
-		// process return function
-		JPanel processReturn = new JPanel();
-
-		this.addCard("Process Return", processReturn);
-
-
-		// check overdue items function
-		JPanel checkOverdueItemsPanel = new JPanel();
-
-		this.addCard("Check Overdue Items", checkOverdueItemsPanel);
-
+		createProcessReturnPanel();
+		createOverdueItemsPanel();
 	}
-
 	
+
 	private void createAddBorrowerPanel() {
 
 		JPanel addBorrowerPanel = new JPanel(new BorderLayout());
@@ -156,6 +143,26 @@ public class ClerkTabPanel extends UserTabPanel {
 	}
 	
 
+	private void createOverdueItemsPanel() {
+		
+		JPanel checkOverdueItemsPanel = new JPanel();
+
+		//TODO
+		
+		this.addCard("Check Overdue Items", checkOverdueItemsPanel);
+	}
+
+
+	private void createProcessReturnPanel() {
+		
+		JPanel processReturn = new JPanel();
+
+		//TODO
+		
+		this.addCard("Process Return", processReturn);
+	}
+	
+	
 	private boolean addBorrower() {
 
 		String name = nameField.getText();

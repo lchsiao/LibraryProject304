@@ -29,10 +29,10 @@ public class LibraryUI {
 		JPanel clerkPanel = new ClerkTabPanel();
 		tabbedPane.addTab("Clerk", clerkPanel);
 		
-		JPanel borrowerPanel = new JPanel();
+		JPanel borrowerPanel = new BorrowerTabPanel();
 		tabbedPane.addTab("Borrower", borrowerPanel);
 		
-		JPanel librarianPanel = new JPanel();
+		JPanel librarianPanel = new LibrarianTabPanel();
 		tabbedPane.addTab("Librarian", librarianPanel);
 		
 		mainFrame.add(tabbedPane);
