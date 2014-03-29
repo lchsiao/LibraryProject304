@@ -17,7 +17,7 @@ public class LibrarySQLUtil {
 	// db fields
 	private static int borrowingID = 1;
 	private static Date today;
-
+    
 	private static Date borrowerDueDate;
 	private static final String CONNECT_URL = "jdbc:oracle:thin:@dbhost.ugrad.cs.ubc.ca:1522:ug";
 	private static final String USER = "ora_d5l8";
@@ -85,7 +85,7 @@ public class LibrarySQLUtil {
 			Calendar cal = Calendar.getInstance();
 			cal.setTime(today);
 			cal.set(Calendar.YEAR, cal.get(Calendar.YEAR) + 1);
-			ps.setDate(8, (java.sql.Date) cal.getTime());
+			ps.setDate(8, new java.sql.Date(cal.getTime().getTime()));
 			ps.setString(9, type);
 			ps.executeUpdate();
 		    conn.commit();
@@ -122,6 +122,7 @@ public class LibrarySQLUtil {
 			PreparedStatement ps = conn.prepareStatement("SELECT callNumber,copyNo,title FROM bookCopy,book WHERE callNumber=? AND status='in'");
 			PreparedStatement ps2 = conn.prepareStatement("UPDATE bookCopy SET status='in' WHERE callNumber=? AND copyNo=?");
 			PreparedStatement ps3 = conn.prepareStatement("INSERT INTO borrowing VALUES (?,?,?,?,?,?)");
+			
 			for (int i = 0; i < items.size(); i++) {
 				ps.setString(1,items.get(i));
 				rs = ps.executeQuery();
@@ -182,6 +183,7 @@ public class LibrarySQLUtil {
 			ps.setString(2, author);
 			ps.setString(3, subject);
 			rs = ps.executeQuery();
+			
 			while (rs.next()) {
 				tempCallNumber = rs.getString(1);
 				rs2 = ps2.executeQuery();
@@ -201,6 +203,7 @@ public class LibrarySQLUtil {
                               + "   Copies out: " + numOut
                               + "   Copies on hold: " + numOnHold + "\r\n");
 			}
+			
 			ps.close();
 			if (rs != null)
 				rs.close();
@@ -228,24 +231,47 @@ public class LibrarySQLUtil {
 		// TODO method should mark item as "in", assess fine if item is overdue
 		// if item is on hold request by another borrower, a message is sent to that borrower
 		// return SUCCESS_STRING + "Item checked in."
+		try {
+			PreparedStatement ps = conn.prepareStatement("SELECT borid FROM borrowing WHERE callNum=? AND copyNo=?");
+			ResultSet rs = ps.executeQuery();
+			
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
 		
 		return SUCCESS_STRING;
 	}
 	
 	private static Date getDueDate(Date borrowDate, String borrowerType) {
-		Date dueDate = new Date(borrowDate.getTime() + 1209600000);
+		Date dueDate;
+		if (borrowerType.equals("student")) {
+			dueDate = new Date(borrowDate.getTime() + 1209600000);
+		} else {
+			Calendar cal = Calendar.getInstance();
+			cal.setTime(borrowDate);
+			if (borrowerType.equals("staff")) {
+				cal.set(Calendar.WEEK_OF_YEAR, cal.get(Calendar.WEEK_OF_YEAR) + 6);
+				dueDate = cal.getTime();
+			} else {
+				cal.set(Calendar.WEEK_OF_YEAR, cal.get(Calendar.WEEK_OF_YEAR) + 12);
+				dueDate = cal.getTime();
+			}
+		}
 		return dueDate;
-
+	}
+    
 	public static String checkAcct(String bid) {
 		// TODO Auto-generated method stub
 		return null;
 	}
-
+    
 	public static String holdRequest(String bid, String callNumber) {
 		// TODO Auto-generated method stub
 		return null;
 	}
-
+    
 	public static String payFines(String borid, String amount) {
 		// TODO Auto-generated method stub
 		return null;
