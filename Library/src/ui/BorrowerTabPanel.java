@@ -201,6 +201,7 @@ public class BorrowerTabPanel extends UserTabPanel {
 		String result = LibrarySQLUtil.searchBooks(title, author, subject);
 		if (result.contains(LibrarySQLUtil.SUCCESS_STRING)) {
 			// Display the search results in a new JPanel
+			JOptionPane.showMessageDialog(this, result);
 		} else {
 			JOptionPane.showMessageDialog(this, result, "Error", JOptionPane.ERROR_MESSAGE);
 		}
