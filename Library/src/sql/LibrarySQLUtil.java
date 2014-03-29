@@ -17,9 +17,9 @@ public class LibrarySQLUtil {
 	private static int borrowingID = 1;
 	private static Date today;
 	private static Date borrowerDueDate;
-	private static final String CONNECT_URL = "jdbc:oracle:thin:@localhost:1521:ug";
-	private static final String USER = "root";
-	private static final String PASSWORD = "1234";
+	private static final String CONNECT_URL = "jdbc:oracle:thin:@dbhost.ugrad.cs.ubc.ca:1522:ug";
+	private static final String USER = "ora_u8e8";
+	private static final String PASSWORD = "a47813100";
     
 	private static Connection conn;
 	
