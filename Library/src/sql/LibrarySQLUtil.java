@@ -92,8 +92,13 @@ public class LibrarySQLUtil {
 			}
 		}
 		return SUCCESS_STRING + "New borrower <bid> added.";
-	}
-	
+		}
+
+		// return SUCCESS_STRING + "New borrower <bid> added." on success, SQL error message if failed
+		
+
+
+>>>>>>> FETCH_HEAD
 	public static String checkOutItems(String bid, List<String> items) {
 		//TODO
 		String result = new String();
@@ -143,5 +148,10 @@ public class LibrarySQLUtil {
 		}
 		
 		return result;
+	}
+
+	public static String searchBooks(String title, String author, String subject) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }
