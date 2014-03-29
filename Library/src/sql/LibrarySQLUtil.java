@@ -17,9 +17,11 @@ public class LibrarySQLUtil {
 	// db fields
 	private static int borrowingID = 1;
 	private static Date today;
-	private static final String CONNECT_URL = "jdbc:oracle:thin:@localhost:1521:ug";
-	private static final String USER = "root";
-	private static final String PASSWORD = "1234";
+
+	private static Date borrowerDueDate;
+	private static final String CONNECT_URL = "jdbc:oracle:thin:@dbhost.ugrad.cs.ubc.ca:1522:ug";
+	private static final String USER = "ora_d5l8";
+	private static final String PASSWORD = "a52632056";
     
 	private static Connection conn;
 	
@@ -233,5 +235,19 @@ public class LibrarySQLUtil {
 	private static Date getDueDate(Date borrowDate, String borrowerType) {
 		Date dueDate = new Date(borrowDate.getTime() + 1209600000);
 		return dueDate;
+
+	public static String checkAcct(String bid) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public static String holdRequest(String bid, String callNumber) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public static String payFines(String borid, String amount) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }
