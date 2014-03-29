@@ -5,6 +5,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
@@ -16,7 +17,6 @@ public class LibrarySQLUtil {
 	// db fields
 	private static int borrowingID = 1;
 	private static Date today;
-	private static Date borrowerDueDate;
 	private static final String CONNECT_URL = "jdbc:oracle:thin:@localhost:1521:ug";
 	private static final String USER = "root";
 	private static final String PASSWORD = "1234";
@@ -30,7 +30,6 @@ public class LibrarySQLUtil {
 		loadDriver();
 		conn = getConnection();
 		today = new java.util.Date();
-		borrowerDueDate = new Date(today.getTime() + 1209600000);
 	}
 	
 	private LibrarySQLUtil(){}
@@ -73,14 +72,19 @@ public class LibrarySQLUtil {
 	public static String addBorrower(String name, String password, String address, String phone, String email, String sinOrStdNo, String type) {
 		//TODO
 		try {
-			PreparedStatement ps = conn.prepareStatement("INSERT INTO borrower VALUES (?,?,?,?,?,?,?)");
-			ps.setString(1, name);
+			PreparedStatement ps = conn.prepareStatement("INSERT INTO borrower (bid,bPass,bName,address,phone,emailAddress,sinOrStNo,expiryDate,bType) "
+                                                         + "VALUES (seq_borrower.nextval,?,?,?,?,?,?,?,?)");
 			ps.setString(2, password);
-			ps.setString(3, address);
-			ps.setString(4, phone);
-			ps.setString(5, email);
-			ps.setInt(6, Integer.parseInt(sinOrStdNo));
-			ps.setString(7, type);
+			ps.setString(3, name);
+			ps.setString(4, address);
+			ps.setString(5, phone);
+			ps.setString(6, email);
+			ps.setInt(7, Integer.parseInt(sinOrStdNo));
+			Calendar cal = Calendar.getInstance();
+			cal.setTime(today);
+			cal.set(Calendar.YEAR, cal.get(Calendar.YEAR) + 1);
+			ps.setDate(8, (java.sql.Date) cal.getTime());
+			ps.setString(9, type);
 			ps.executeUpdate();
 		    conn.commit();
 			ps.close();
@@ -92,7 +96,7 @@ public class LibrarySQLUtil {
 				System.out.println("SQLException on rollback: " + e1.getMessage());
 			}
 		}
-		return SUCCESS_STRING + "New borrower <bid> added.";
+		return SUCCESS_STRING + "New borrower " +  "added.";
     }
     
     
@@ -129,7 +133,7 @@ public class LibrarySQLUtil {
 					ps3.setString(3, rs.getString(1));
 					ps3.setInt(4, rs.getInt(2));
 					ps3.setDate(5, new java.sql.Date(today.getTime()));
-					ps3.setDate(6, new java.sql.Date(borrowerDueDate.getTime()));
+					ps3.setDate(6, null);
 					ps3.executeUpdate();
 					
 					result.concat("Successfully checked out " + rs.getString(3) + ". Due on " + borrowerDueDate + "\r\n");
@@ -196,16 +200,16 @@ public class LibrarySQLUtil {
                               + "   Copies on hold: " + numOnHold + "\r\n");
 			}
 			ps.close();
-			if (rs != null) 
+			if (rs != null)
 				rs.close();
 			ps2.close();
-			if (rs2 != null) 
+			if (rs2 != null)
 				rs2.close();
 			ps3.close();
-			if (rs3 != null) 
+			if (rs3 != null)
 				rs3.close();
 			ps4.close();
-			if (rs4 != null) 
+			if (rs4 != null)
 				rs4.close();
 		} catch (SQLException e) {
 			try {
@@ -217,11 +221,17 @@ public class LibrarySQLUtil {
 		}
 		return result;
 	}
-
-	public static String processReturn(String returnID) {
+    
+	public static String processReturn(String callNum, int copyNum) {
 		// TODO method should mark item as "in", assess fine if item is overdue
-			// if item is on hold request by another borrower, a message is sent to that borrower
+		// if item is on hold request by another borrower, a message is sent to that borrower
 		// return SUCCESS_STRING + "Item checked in."
+		
 		return SUCCESS_STRING;
+	}
+	
+	private static Date getDueDate(Date borrowDate, String borrowerType) {
+		Date dueDate = new Date(borrowDate.getTime() + 1209600000);
+		return dueDate;
 	}
 }
