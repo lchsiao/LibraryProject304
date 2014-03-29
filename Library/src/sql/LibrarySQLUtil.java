@@ -94,11 +94,7 @@ public class LibrarySQLUtil {
 		return SUCCESS_STRING + "New borrower <bid> added.";
 		}
 
-		// return SUCCESS_STRING + "New borrower <bid> added." on success, SQL error message if failed
-		
 
-
->>>>>>> FETCH_HEAD
 	public static String checkOutItems(String bid, List<String> items) {
 		//TODO
 		String result = new String();
