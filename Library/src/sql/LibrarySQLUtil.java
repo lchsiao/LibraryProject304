@@ -224,4 +224,19 @@ public class LibrarySQLUtil {
 		// return SUCCESS_STRING + "Item checked in."
 		return SUCCESS_STRING;
 	}
+
+	public static String checkAcct(String bid) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public static String holdRequest(String bid, String callNumber) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public static String payFines(String borid, String amount) {
+		// TODO Auto-generated method stub
+		return null;
+	}
 }

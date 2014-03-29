@@ -27,10 +27,12 @@ public class BorrowerTabPanel extends UserTabPanel {
 	// createCheckAccount fields
 	private static final String CHECK_ACCT_ACTION = "CHECKACCT";
 		
-	private JTextField bidField;
+	private JTextField checkAcctBidField;
 	
 	// createRequestHold fields
 	private static final String HOLD_REQUEST_ACTION = "HOLDREQUEST";
+	
+	private JTextField requestHoldBidField;
 	
 	private JTextField callNumberField;
 	
@@ -106,9 +108,9 @@ public class BorrowerTabPanel extends UserTabPanel {
 		createCheckAccountPanelTop.setBorder(new EmptyBorder(10, 10, 10, 10));
 
 		JLabel bidLabel = new JLabel("Card Number:");
-		bidField = new JTextField();
+		checkAcctBidField = new JTextField();
 		createCheckAccountPanelTop.add(bidLabel);
-		createCheckAccountPanelTop.add(bidField);
+		createCheckAccountPanelTop.add(checkAcctBidField);
 
 		createCheckAccountPanel.add(createCheckAccountPanelTop, BorderLayout.PAGE_START);
 
@@ -136,9 +138,9 @@ public class BorrowerTabPanel extends UserTabPanel {
 		createRequestHoldPanelTop.setBorder(new EmptyBorder(10, 10, 10, 10));
 
 		JLabel bidLabel = new JLabel("Card Number:");
-		bidField = new JTextField();
+		requestHoldBidField = new JTextField();
 		createRequestHoldPanelTop.add(bidLabel);
-		createRequestHoldPanelTop.add(bidField);
+		createRequestHoldPanelTop.add(requestHoldBidField);
 		
 		JLabel callNumberLabel = new JLabel("Call Number:");
 		callNumberField = new JTextField();
@@ -211,17 +213,60 @@ public class BorrowerTabPanel extends UserTabPanel {
 	}
 
 	private void checkAcct() {
-		// TODO Auto-generated method stub
+		
+		String bid = checkAcctBidField.getText();
+		
+		if (bid.isEmpty()) {
+			showDefaultError();
+		}
+		
+		String result = LibrarySQLUtil.checkAcct(bid);
+		if (result.contains(LibrarySQLUtil.SUCCESS_STRING)) {
+			// Display the account details in a new JPanel
+			JOptionPane.showMessageDialog(this, result);
+		} else {
+			JOptionPane.showMessageDialog(this, result, "Error", JOptionPane.ERROR_MESSAGE);
+		}
 		
 	}
 
 	private void holdRequest() {
-		// TODO Auto-generated method stub
+
+		String bid = requestHoldBidField.getText();
+		String callNumber = callNumberField.getText();
+		
+		if (bid.isEmpty() || callNumber.isEmpty()) {
+			showDefaultError();
+		}
+		
+		String result = LibrarySQLUtil.holdRequest(bid, callNumber);
+		if (result.contains(LibrarySQLUtil.SUCCESS_STRING)) {
+			// Display the account details in a new JPanel
+			JOptionPane.showMessageDialog(this, result);
+		} else {
+			JOptionPane.showMessageDialog(this, result, "Error", JOptionPane.ERROR_MESSAGE);
+		}
 		
 	}
 
 	private void payFines() {
-		// TODO Auto-generated method stub
+		
+		String borid = boridField.getText();
+		String amount = amountField.getText();
+			
+		
+		if (borid.isEmpty()) {
+			showDefaultError();
+		}
+		
+		String result = LibrarySQLUtil.payFines(borid, amount);
+		if (result.contains(LibrarySQLUtil.SUCCESS_STRING)) {
+			// Display the account details in a new JPanel
+			JOptionPane.showMessageDialog(this, result);
+		} else {
+			JOptionPane.showMessageDialog(this, result, "Error", JOptionPane.ERROR_MESSAGE);
+		}
+		
 		
 	}
 
