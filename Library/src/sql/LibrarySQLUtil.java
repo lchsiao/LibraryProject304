@@ -64,6 +64,7 @@ public class LibrarySQLUtil {
 		catch (SQLException ex)
 		{
 			System.out.println("Message: " + ex.getMessage());
+			ex.printStackTrace();
 		}
 		
 		return null;
@@ -215,5 +216,12 @@ public class LibrarySQLUtil {
 			}
 		}
 		return result;
+	}
+
+	public static String processReturn(String returnID) {
+		// TODO method should mark item as "in", assess fine if item is overdue
+			// if item is on hold request by another borrower, a message is sent to that borrower
+		// return SUCCESS_STRING + "Item checked in."
+		return SUCCESS_STRING;
 	}
 }

@@ -42,6 +42,11 @@ public class ClerkTabPanel extends UserTabPanel {
 	private JPanel checkOutItemsPanelTop;
 	private JTextField bidField;
 	private List<JTextField> itemsField;
+	
+	// processReturn fields
+	private static final String PROCESS_RETURN_ACTION = "PROCESSRETURN";
+	
+	private JTextField returnIDField;
 
 	@Override
 	protected void initializeCards() {
@@ -154,12 +159,25 @@ public class ClerkTabPanel extends UserTabPanel {
 
 
 	private void createProcessReturnPanel() {
-		
-		JPanel processReturn = new JPanel();
 
-		//TODO
+		JPanel processReturnPanel = new JPanel(new BorderLayout());
+		processReturnPanel.setBorder(new EmptyBorder(0, 10, 10, 10));
+		JPanel processReturnPanelTop = new JPanel(new GridLayout(0, 2, 10, 10));
+		processReturnPanelTop.setBorder(new EmptyBorder(10, 10, 10, 10));
+
+		JLabel returnIDLabel = new JLabel("Item Call Number:");
+		returnIDField = new JTextField();
+		processReturnPanelTop.add(returnIDLabel);
+		processReturnPanelTop.add(returnIDField);
+
+		processReturnPanel.add(processReturnPanelTop, BorderLayout.PAGE_START);
+
+		JButton processReturnSubmit = new JButton("Process Return");
+		processReturnPanel.add(processReturnSubmit, BorderLayout.CENTER);
+		processReturnSubmit.addActionListener(this);
+		processReturnSubmit.setActionCommand(PROCESS_RETURN_ACTION);
 		
-		this.addCard("Process Return", processReturn);
+		this.addCard("Process Return", processReturnPanel);
 	}
 	
 	
@@ -276,6 +294,29 @@ public class ClerkTabPanel extends UserTabPanel {
 
 		return true;
 	}
+	
+	
+	private boolean processReturn() {
+		
+		String returnID = returnIDField.getText();
+
+		if (returnID.isEmpty()) {
+
+			showDefaultError();
+
+			return false;
+		}
+
+		String result = LibrarySQLUtil.processReturn(returnID);
+		if (result.contains(LibrarySQLUtil.SUCCESS_STRING)) {
+			JOptionPane.showMessageDialog(this, result);
+		} else {
+			JOptionPane.showMessageDialog(this, result, "Error", JOptionPane.ERROR_MESSAGE);
+		}
+
+		return true;
+		
+	}
 
 	
 	@Override
@@ -295,6 +336,8 @@ public class ClerkTabPanel extends UserTabPanel {
 			case REMOVE_ITEM_ACTION:
 				removeItem((PositionAwareButton)e.getSource());
 				break;
+			case PROCESS_RETURN_ACTION:
+				processReturn();
 				
 		}
 
