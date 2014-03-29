@@ -92,18 +92,20 @@ public class LibrarySQLUtil {
 			}
 		}
 		return SUCCESS_STRING + "New borrower <bid> added.";
-		}
-
-
+    }
+    
+    
 	public static String checkOutItems(String bid, List<String> items) {
 		//TODO
 		String result = new String();
+		ResultSet rs = null;
 		try {
 			PreparedStatement p = conn.prepareStatement("SELECT bid FROM borrower WHERE bid=?");
 			ResultSet temp = p.executeQuery();
 			if (temp.next() == false) {
 				return "Borrower ID not found.";
 			}
+			p.close();
 		} catch (SQLException e2) {
 			System.out.println(e2.getMessage());
 			return "Borrower ID not found.";
@@ -115,7 +117,7 @@ public class LibrarySQLUtil {
 			PreparedStatement ps3 = conn.prepareStatement("INSERT INTO borrowing VALUES (?,?,?,?,?,?)");
 			for (int i = 0; i < items.size(); i++) {
 				ps.setString(1,items.get(i));
-				ResultSet rs = ps.executeQuery();
+				rs = ps.executeQuery();
 				if (rs.next()) {
 					ps2.setString(1, rs.getString(1));
 					ps2.setInt(2, rs.getInt(2));
@@ -131,9 +133,14 @@ public class LibrarySQLUtil {
 					
 					result.concat("Successfully checked out " + rs.getString(3) + ". Due on " + borrowerDueDate + "\r\n");
 					borrowingID++;
-					
 				}
 			}
+			conn.commit();
+			if (rs != null)
+				rs.close();
+			ps.close();
+			ps2.close();
+			ps3.close();
 		} catch (SQLException e) {
 			System.out.println("SQLException: " + e.getMessage());
 			try {
@@ -145,9 +152,68 @@ public class LibrarySQLUtil {
 		
 		return result;
 	}
-
+    
 	public static String searchBooks(String title, String author, String subject) {
-		// TODO Auto-generated method stub
-		return null;
+		String tempCallNumber, result;
+		int numIn, numOut, numOnHold;
+		ResultSet rs = null, rs2 = null, rs3 = null, rs4 = null;
+		result = new String("Your search found:\r\n");
+		try {
+			PreparedStatement ps = conn.prepareStatement("SELECT DISTINCT callNumber "
+                                                         + "FROM book,hasAuthor,hasSubject "
+                                                         + "WHERE title LIKE ? OR name=? OR subject=?");
+			PreparedStatement ps2 = conn.prepareStatement("SELECT COUNT (*) "
+                                                          + "FROM bookCopy,book "
+                                                          + "WHERE callNumber=? AND status='in'");
+			PreparedStatement ps3 = conn.prepareStatement("SELECT COUNT (*) "
+                                                          + "FROM bookCopy,book "
+                                                          + "WHERE callNumber=? AND status='out'");
+			PreparedStatement ps4 = conn.prepareStatement("SELECT COUNT (*) "
+                                                          + "FROM bookCopy,book "
+                                                          + "WHERE callNumber=? AND status='on hold'");
+			ps.setString(1, "%" + title + "%");
+			ps.setString(2, author);
+			ps.setString(3, subject);
+			rs = ps.executeQuery();
+			while (rs.next()) {
+				tempCallNumber = rs.getString(1);
+				rs2 = ps2.executeQuery();
+				if (rs2.next())
+					numIn = rs2.getInt(1);
+				else numIn = 0;
+				rs3 = ps3.executeQuery();
+				if (rs3.next())
+					numOut = rs3.getInt(1);
+				else numOut = 0;
+				rs4 = ps4.executeQuery();
+				if (rs4.next())
+					numOnHold = rs4.getInt(1);
+				else numOnHold = 0;
+				result.concat("CallNumber: " + tempCallNumber
+                              + "   Copies in: " + numIn
+                              + "   Copies out: " + numOut
+                              + "   Copies on hold: " + numOnHold + "\r\n");
+			}
+			ps.close();
+			if (rs != null) 
+				rs.close();
+			ps2.close();
+			if (rs2 != null) 
+				rs2.close();
+			ps3.close();
+			if (rs3 != null) 
+				rs3.close();
+			ps4.close();
+			if (rs4 != null) 
+				rs4.close();
+		} catch (SQLException e) {
+			try {
+				conn.rollback();
+				System.out.println(e.getMessage());
+			} catch (SQLException e1) {
+				System.out.println(e1.getMessage());
+			}
+		}
+		return result;
 	}
 }
