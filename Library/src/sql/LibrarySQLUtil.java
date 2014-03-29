@@ -88,6 +88,8 @@ public class LibrarySQLUtil {
 				System.out.println("SQLException on rollback: " + e1.getMessage());
 			}
 		}
+		return SUCCESS_STRING; // lyn's edit: it required a string to be returned
+		}
 
 		// return SUCCESS_STRING + "New borrower <bid> added." on success, SQL error message if failed
 		
@@ -99,5 +101,10 @@ public class LibrarySQLUtil {
 		// return SUCCESS_STRING + "Items <firstItem>, <secondItem>... checked-out." on success, SQL error message if failed
 		
 		return SUCCESS_STRING;
+	}
+
+	public static String searchBooks(String title, String author, String subject) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }
