@@ -1,9 +1,7 @@
 package ui;
 
 import java.awt.BorderLayout;
-import java.awt.Dimension;
 import java.awt.GridLayout;
-import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.util.List;
 
@@ -12,8 +10,6 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.border.EmptyBorder;
 
@@ -24,16 +20,22 @@ public class BorrowerTabPanel extends UserTabPanel {
 
 	// createSearchBooks fields
 	private static final String SEARCH_BOOKS_ACTION = "SEARCHBOOKS";
+	private static final String[] HEADER_SEARCH_BOOKS = new String[] {"Title", "Call No.", "In", "On", "On Hold"};
 	
-	private JFrame booksFrame;
-	private String[] booksTableHeader;
+	private JFrame searchBooksFrame;
 	private JTextField titleField;
 	private JTextField authorField;
 	private JTextField subjectField;
 	
 	// createCheckAccount fields
 	private static final String CHECK_ACCT_ACTION = "CHECKACCT";
-		
+	private static final String[] HEADER_BORROWED_ITEMS = new String[] {"Title", "Call Number", "Out Date"};
+	private static final String[] HEADER_FINES = new String[] {"Call Number", "Fine Amount"};
+	private static final String[] HEADER_HELD_ITEMS = new String[] {"Title", "Call Number"}; 
+	
+	private JFrame borrowedItemsFrame;
+	private JFrame finesFrame;
+	private JFrame heldItemsFrame;
 	private JTextField checkAcctBidField;
 	
 	// createRequestHold fields
@@ -52,7 +54,7 @@ public class BorrowerTabPanel extends UserTabPanel {
 	
 	@Override
 	protected void initializeCards() {
-
+		
 		createSearchBooksPanel();
 		createCheckAccountPanel();
 		createRequestHoldPanel();
@@ -96,8 +98,7 @@ public class BorrowerTabPanel extends UserTabPanel {
 		searchBooksSubmit.addActionListener(this);
 		searchBooksSubmit.setActionCommand(SEARCH_BOOKS_ACTION);
 		
-		booksFrame = new JFrame();
-		booksTableHeader = new String[] {"Title", "Call No.", "In", "On", "On Hold"};
+		searchBooksFrame = new JFrame("Book Search Results");
 		
 		this.addCard("Search Books", createSearchBooksPanel);
 	}
@@ -128,6 +129,10 @@ public class BorrowerTabPanel extends UserTabPanel {
 		createCheckAccountPanel.add(checkAccountSubmit, BorderLayout.CENTER);
 		checkAccountSubmit.addActionListener(this);
 		checkAccountSubmit.setActionCommand(CHECK_ACCT_ACTION);
+		
+		borrowedItemsFrame = new JFrame("Borrowed Items");
+		finesFrame = new JFrame("Fines");
+		heldItemsFrame = new JFrame("Held Fines");
 
 		this.addCard("Check Account", createCheckAccountPanel);
 	}
@@ -198,6 +203,7 @@ public class BorrowerTabPanel extends UserTabPanel {
 		
 		this.addCard("Pay Fines", createPayFinesPanel);
 	}
+	
 
 	private void searchBooks() {
 		
@@ -205,36 +211,15 @@ public class BorrowerTabPanel extends UserTabPanel {
 		String author = authorField.getText();
 		String subject = subjectField.getText();
 		
-		if (title.isEmpty() || author.isEmpty() || subject.isEmpty()) {
+		if (title.isEmpty() && author.isEmpty() && subject.isEmpty()) {
 			showDefaultError();
 			return;
 		}
 		
 		List<String[]> result = LibrarySQLUtil.searchBooks(title, author, subject);
 		String[][] data = result.toArray(new String[result.size()][]);
-		if (data.length != 0) {
-			
-			Dimension d = booksFrame.getToolkit().getScreenSize();
-			
-			JTable booksTable = new JTable(data, booksTableHeader);
-			booksTable.setPreferredScrollableViewportSize(new Dimension(600, Math.min(booksTable.getPreferredSize().height, d.height)));
-			booksTable.setFillsViewportHeight(true);
-			JScrollPane scroll = new JScrollPane(booksTable);
-			
-			booksFrame.add(scroll);
-			booksFrame.pack();
-			
-			// center the frame
-			Rectangle r = booksFrame.getBounds();
-			booksFrame.setLocation( (d.width - r.width)/2, (d.height - r.height)/2 );
-			
-			booksFrame.setVisible(true);
-		} else {
-			JOptionPane.showMessageDialog(this, "No results found");
-		}
 		
-		
-		
+		createAndDisplayPopupTable(searchBooksFrame, data, HEADER_SEARCH_BOOKS);
 	}
 
 	private void checkAcct() {
@@ -246,14 +231,14 @@ public class BorrowerTabPanel extends UserTabPanel {
 			return;
 		}
 		
-		String result = LibrarySQLUtil.checkAcct(bid);
-		if (result.contains(LibrarySQLUtil.SUCCESS_STRING)) {
-			// Display the account details in a new JPanel
-			JOptionPane.showMessageDialog(this, result);
-		} else {
-			JOptionPane.showMessageDialog(this, result, "Error", JOptionPane.ERROR_MESSAGE);
-		}
+		List<List<String[]>> result = LibrarySQLUtil.checkAcct(bid);
+		String[][] borrowedItemsData = result.get(0).toArray(new String[result.get(0).size()][]);
+		String[][] fineData = result.get(1).toArray(new String[result.get(1).size()][]);
+		String[][] heldItemsData = result.get(2).toArray(new String[result.get(2).size()][]);
 		
+		createAndDisplayPopupTable(borrowedItemsFrame, borrowedItemsData, HEADER_BORROWED_ITEMS);
+		createAndDisplayPopupTable(finesFrame, fineData, HEADER_FINES);
+		createAndDisplayPopupTable(heldItemsFrame, heldItemsData, HEADER_HELD_ITEMS);
 	}
 
 	private void holdRequest() {
@@ -282,12 +267,12 @@ public class BorrowerTabPanel extends UserTabPanel {
 		String amount = amountField.getText();
 			
 		
-		if (borid.isEmpty()) {
+		if (borid.isEmpty() || amount.isEmpty()) {
 			showDefaultError();
 			return;
 		}
 		
-		String result = LibrarySQLUtil.payFines(borid, amount);
+		String result = LibrarySQLUtil.payFines(Integer.parseInt(borid), Integer.parseInt(amount));
 		if (result.contains(LibrarySQLUtil.SUCCESS_STRING)) {
 			// Display the account details in a new JPanel
 			JOptionPane.showMessageDialog(this, result);
