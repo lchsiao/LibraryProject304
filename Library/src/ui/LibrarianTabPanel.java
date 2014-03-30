@@ -6,9 +6,12 @@ import java.awt.event.ActionEvent;
 
 import javax.swing.JButton;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.border.EmptyBorder;
+
+import sql.LibrarySQLUtil;
 
 @SuppressWarnings("serial")
 public class LibrarianTabPanel extends UserTabPanel {
@@ -171,8 +174,31 @@ public class LibrarianTabPanel extends UserTabPanel {
 	}
 
 
-	private void addBook() {
+	private boolean addBook() {
 		// TODO Auto-generated method stub
+		
+		String callNumber = callNumberField.getText();
+		String isbn = isbnField.getText();
+		String title = titleField.getText();
+		String author = authorField.getText();
+		String publisher = publisherField.getText();
+		String publishedYear = publishedYearField.getText();
+		
+		if (callNumber.isEmpty() || isbn.isEmpty() || title.isEmpty() || 
+				author.isEmpty() || publisher.isEmpty() || publishedYear.isEmpty()) {
+			
+			showDefaultError();
+			return false;
+		}
+	
+		String result = LibrarySQLUtil.addBook(callNumber, isbn, title, author, publisher, publishedYear);
+		if (result.contains(LibrarySQLUtil.SUCCESS_STRING)) {
+			JOptionPane.showMessageDialog(this, result);
+		} else {
+			JOptionPane.showMessageDialog(this, result, "Error", JOptionPane.ERROR_MESSAGE);
+		}
+
+		return true;
 		
 	}
 
@@ -180,15 +206,40 @@ public class LibrarianTabPanel extends UserTabPanel {
 	private void generateBookReport() {
 		// TODO Auto-generated method stub
 		
+		String subject = subjectField.getText();
+		
+		String result = LibrarySQLUtil.generateBookReport(subject);
+		if (result.contains(LibrarySQLUtil.SUCCESS_STRING)) {
+			JOptionPane.showMessageDialog(this, result);
+		} else {
+			JOptionPane.showMessageDialog(this, result, "Error", JOptionPane.ERROR_MESSAGE);
+		}
+		
 	}
 
 
 	private void listMostPopularItems() {
 		// TODO Auto-generated method stub
 		
+		String year = yearField.getText();
+		String n = nField.getText();
+		
+		if (year.isEmpty() || n.isEmpty()) {
+			
+			showDefaultError();
+			return;
+		}
+		
+		String result = LibrarySQLUtil.listMostPopularItems(year, n);
+		if (result.contains(LibrarySQLUtil.SUCCESS_STRING)) {
+			JOptionPane.showMessageDialog(this, result);
+		} else {
+			JOptionPane.showMessageDialog(this, result, "Error", JOptionPane.ERROR_MESSAGE);
+		}
 	}
 
 
+	
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		

@@ -439,4 +439,20 @@ public class LibrarySQLUtil {
 		// TODO Auto-generated method stub
 		
 	}
+
+	public static String addBook(String callNumber, String isbn, String title,
+			String author, String publisher, String publishedYear) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public static String generateBookReport(String subject) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public static String listMostPopularItems(String year, String n) {
+		// TODO Auto-generated method stub
+		return null;
+	}
 }
