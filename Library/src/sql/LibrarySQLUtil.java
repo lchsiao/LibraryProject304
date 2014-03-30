@@ -338,7 +338,7 @@ public class LibrarySQLUtil {
 		// TODO Auto-generated method stub
 		List<List<String[]>> result = new ArrayList<List<String[]>>();
 		List<String[]> borrows = new ArrayList<String[]>(), fines = new ArrayList<String[]>(), holds = new ArrayList<String[]>();
-		String title, callNumber, borrowerType, dueDate, fineAmount, callNum;
+		String title, borrowerType, dueDate, fineAmount, callNum, copyNum;
 		try {
 			PreparedStatement p = conn.prepareStatement("SELECT bType FROM borrower WHERE bid=?");
 			p.setString(1, bid);
@@ -348,9 +348,9 @@ public class LibrarySQLUtil {
 			borrowerType = r.getString(1);
 			
 			// REMEMBER!! also return the bookCopyNumber in the search query (ask Jimmy)
-			PreparedStatement ps = conn.prepareStatement("SELECT title,book.callNumber,outDate"
+			PreparedStatement ps = conn.prepareStatement("SELECT title,book.callNumber,copyNo,outDate"
 														 + " FROM book,borrowing "
-                                                         + " WHERE book.callNumber=borrowing.callNumber AND bid=? AND inDate IS NULL");
+                                                         + " WHERE book.callNumber=borrowing.callNumber AND book.copyNo=borrowing.copyNo AND bid=? AND inDate IS NULL");
 			PreparedStatement ps2 = conn.prepareStatement("SELECT amount,callNumber"
                                                           + " FROM fine,borrowing"
                                                           + " WHERE fine.borid=borrowing.borid AND bid=?");
@@ -362,9 +362,10 @@ public class LibrarySQLUtil {
 			while (rs.next()) {
 				rs.getString(1);
 				title = rs.getString(1);
-				callNumber = rs.getString(2);
-				dueDate = "" + getDueDate(rs.getDate(3), borrowerType) + "";
-				String[] borrow = {callNumber, title, dueDate};
+				callNum = rs.getString(2);
+				copyNum = Integer.toString(rs.getInt(3));
+				dueDate = "" + getDueDate(rs.getDate(4), borrowerType) + "";
+				String[] borrow = {callNum, copyNum, title, dueDate};
 				borrows.add(borrow);
 			}
 			rs.close();
@@ -483,7 +484,31 @@ public class LibrarySQLUtil {
 	
 	public static List<String[]> getOverdueItems() {
 		// TODO Auto-generated method stub
-		return new ArrayList<String[]>();
+		List<String[]> result = new ArrayList<String[]>();
+		String borrowerType, email, callNum, copyNum;
+		Date dueDate;
+		try {
+			PreparedStatement ps = conn.prepareStatement("SELECT callNumber,copyNo,bType,emailAddress,outDate FROM borrowing,borrower WHERE borrowing.bid=borrower.bid AND inDate IS NULL");
+			ResultSet rs = ps.executeQuery();
+			while (rs.next()) {
+				borrowerType = rs.getString(3);
+				dueDate = getDueDate(rs.getDate(5), borrowerType);
+				if (today.before(dueDate)) {
+					email = rs.getString(4);
+					callNum = rs.getString(1);
+					copyNum = Integer.toString(rs.getInt(2));
+					String[] overdue = {callNum, copyNum, email};
+					result.add(overdue);
+				}
+			}
+			rs.close();
+			ps.close();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		return result;
 	}
     
 	public static String getOverdueEmail(String callNumber, String borrowerid) {
