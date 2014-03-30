@@ -1,11 +1,16 @@
 package ui;
 
 import java.awt.BorderLayout;
+import java.awt.Dimension;
 import java.awt.GridLayout;
+import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.util.List;
 
-import javax.swing.Box;
 import javax.swing.JButton;
+import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -20,6 +25,13 @@ public class BorrowerTabPanel extends UserTabPanel {
 	// createSearchBooks fields
 	private static final String SEARCH_BOOKS_ACTION = "SEARCHBOOKS";
 	
+	private JFrame booksFrame;
+	private JPanel booksPanel;
+	private JLabel bookTitleLabel;
+	private JLabel bookCallNumberLabel;
+	private JLabel bookInLabel;
+	private JLabel bookOutLabel;
+	private JLabel bookOnHoldLabel;
 	private JTextField titleField;
 	private JTextField authorField;
 	private JTextField subjectField;
@@ -89,6 +101,15 @@ public class BorrowerTabPanel extends UserTabPanel {
 		searchBooksSubmit.addActionListener(this);
 		searchBooksSubmit.setActionCommand(SEARCH_BOOKS_ACTION);
 		
+		booksFrame = new JFrame();
+		booksPanel = new JPanel(new GridLayout(0, 5, 10, 10));
+		booksFrame.add(booksPanel);
+		bookCallNumberLabel = new JLabel("Call No.");
+		bookInLabel = new JLabel("In");
+		bookOnHoldLabel = new JLabel("On Hold");
+		bookOutLabel = new JLabel("On");
+		bookTitleLabel = new JLabel("Title");
+		
 		this.addCard("Search Books", createSearchBooksPanel);
 	}
 
@@ -155,7 +176,6 @@ public class BorrowerTabPanel extends UserTabPanel {
 		placeHoldRequestSubmit.setActionCommand(HOLD_REQUEST_ACTION);
 
 		this.addCard("Request Hold", createRequestHoldPanel);
-		
 	}
 
 	/**
@@ -198,14 +218,36 @@ public class BorrowerTabPanel extends UserTabPanel {
 		
 		if (title.isEmpty() || author.isEmpty() || subject.isEmpty()) {
 			showDefaultError();
+			return;
 		}
 		
-		String result = LibrarySQLUtil.searchBooks(title, author, subject);
-		if (result.contains(LibrarySQLUtil.SUCCESS_STRING)) {
-			// Display the search results in a new JPanel
-			JOptionPane.showMessageDialog(this, result);
+		List<String[]> result = LibrarySQLUtil.searchBooks(title, author, subject);
+		if (result.isEmpty()) {
+			
+			booksPanel.removeAll();
+			
+			booksPanel.add(bookTitleLabel);
+			booksPanel.add(bookCallNumberLabel);
+			booksPanel.add(bookInLabel);
+			booksPanel.add(bookOutLabel);
+			booksPanel.add(bookOnHoldLabel);
+			
+			for (String[] row : result) {
+				for (String col : row) {
+					booksPanel.add(new JLabel(col));
+				}
+			}
+			
+			booksFrame.pack();
+			
+			// center the frame
+			Dimension d = booksFrame.getToolkit().getScreenSize();
+			Rectangle r = booksFrame.getBounds();
+			booksFrame.setLocation( (d.width - r.width)/2, (d.height - r.height)/2 );
+			
+			booksFrame.setVisible(true);
 		} else {
-			JOptionPane.showMessageDialog(this, result, "Error", JOptionPane.ERROR_MESSAGE);
+			JOptionPane.showMessageDialog(this, "No results found");
 		}
 		
 		
@@ -218,6 +260,7 @@ public class BorrowerTabPanel extends UserTabPanel {
 		
 		if (bid.isEmpty()) {
 			showDefaultError();
+			return;
 		}
 		
 		String result = LibrarySQLUtil.checkAcct(bid);
@@ -237,6 +280,7 @@ public class BorrowerTabPanel extends UserTabPanel {
 		
 		if (bid.isEmpty() || callNumber.isEmpty()) {
 			showDefaultError();
+			return;
 		}
 		
 		String result = LibrarySQLUtil.holdRequest(bid, callNumber);
@@ -257,6 +301,7 @@ public class BorrowerTabPanel extends UserTabPanel {
 		
 		if (borid.isEmpty()) {
 			showDefaultError();
+			return;
 		}
 		
 		String result = LibrarySQLUtil.payFines(borid, amount);
