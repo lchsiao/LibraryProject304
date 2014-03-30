@@ -47,6 +47,7 @@ public class ClerkTabPanel extends UserTabPanel {
 	private static final String PROCESS_RETURN_ACTION = "PROCESSRETURN";
 	
 	private JTextField returnIDField;
+	private JTextField copyNumberField;
 
 	@Override
 	protected void initializeCards() {
@@ -170,6 +171,11 @@ public class ClerkTabPanel extends UserTabPanel {
 		processReturnPanelTop.add(returnIDLabel);
 		processReturnPanelTop.add(returnIDField);
 
+		JLabel copyLabel = new JLabel("Copy Number:");
+		copyNumberField = new JTextField();
+		processReturnPanelTop.add(copyLabel);
+		processReturnPanelTop.add(copyNumberField);
+		
 		processReturnPanel.add(processReturnPanelTop, BorderLayout.PAGE_START);
 
 		JButton processReturnSubmit = new JButton("Process Return");
@@ -300,14 +306,16 @@ public class ClerkTabPanel extends UserTabPanel {
 		
 		String returnID = returnIDField.getText();
 
-		if (returnID.isEmpty()) {
+		String copyNumber = copyNumberField.getText();
+		
+		if (returnID.isEmpty() || copyNumber.isEmpty()) {
 
 			showDefaultError();
 
 			return false;
 		}
 
-		String result = LibrarySQLUtil.processReturn(returnID);
+		String result = LibrarySQLUtil.processReturn(returnID, Integer.parseInt(copyNumber));
 		if (result.contains(LibrarySQLUtil.SUCCESS_STRING)) {
 			JOptionPane.showMessageDialog(this, result);
 		} else {
