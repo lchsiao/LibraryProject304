@@ -4,14 +4,10 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
-
-import oracle.sql.DATE;
-
 
 public class LibrarySQLUtil {
     
@@ -365,7 +361,7 @@ public class LibrarySQLUtil {
 				callNum = rs.getString(2);
 				copyNum = Integer.toString(rs.getInt(3));
 				dueDate = "" + getDueDate(rs.getDate(4), borrowerType) + "";
-				String[] borrow = {callNum, copyNum, title, dueDate};
+				String[] borrow = {callNum, title, copyNum, dueDate};
 				borrows.add(borrow);
 			}
 			rs.close();
@@ -375,7 +371,7 @@ public class LibrarySQLUtil {
 			while (rs2.next()) {
 				fineAmount = Integer.toString(rs2.getInt(1));
 				callNum = rs2.getString(2);
-				String[] fine = {fineAmount, callNum};
+				String[] fine = {callNum, fineAmount};
 				fines.add(fine);
 			}
 			rs2.close();
