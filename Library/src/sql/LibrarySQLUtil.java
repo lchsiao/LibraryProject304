@@ -16,10 +16,7 @@ import oracle.sql.DATE;
 public class LibrarySQLUtil {
     
 	// db fields
-	private static int borrowingID = 1;
 	private static Date today;
-    
-	private static Date borrowerDueDate;
 	private static final String CONNECT_URL = "jdbc:oracle:thin:@dbhost.ugrad.cs.ubc.ca:1522:ug";
 	private static final String USER = "ora_d5l8";
 	private static final String PASSWORD = "a52632056";
@@ -107,12 +104,14 @@ public class LibrarySQLUtil {
 		//TODO
 		String result = new String();
 		ResultSet rs = null;
+	    String borrowerType;
 		try {
-			PreparedStatement p = conn.prepareStatement("SELECT bid FROM borrower WHERE bid=?");
+			PreparedStatement p = conn.prepareStatement("SELECT bid,bType FROM borrower WHERE bid=?");
 			ResultSet temp = p.executeQuery();
 			if (temp.next() == false) {
 				return "Borrower ID not found.";
 			}
+			borrowerType = temp.getString(2);
 			p.close();
 		} catch (SQLException e2) {
 			System.out.println(e2.getMessage());
@@ -120,28 +119,26 @@ public class LibrarySQLUtil {
 		}
 		
 		try {
-			PreparedStatement ps = conn.prepareStatement("SELECT callNumber,copyNo,title FROM bookCopy,book WHERE callNumber=? AND status='in'");
-			PreparedStatement ps2 = conn.prepareStatement("UPDATE bookCopy SET status='in' WHERE callNumber=? AND copyNo=?");
-			PreparedStatement ps3 = conn.prepareStatement("INSERT INTO borrowing VALUES (?,?,?,?,?,?)");
+			PreparedStatement ps = conn.prepareStatement("SELECT callNumber,copyNo,title FROM bookCopy,book WHERE bookCopy.callNumber = book.callNumber AND callNumber=? AND copyStatus='in'");
+			PreparedStatement ps2 = conn.prepareStatement("UPDATE bookCopy SET copyStatus='in' WHERE callNumber=? AND copyNo=?");
+			PreparedStatement ps3 = conn.prepareStatement("INSERT INTO borrowing (borid,bid,callNumber,copyNo,outDate,inDate) VALUES (seq_borrowing.nextval,?,?,?,?,?)");
 			
 			for (int i = 0; i < items.size(); i++) {
 				ps.setString(1,items.get(i));
 				rs = ps.executeQuery();
 				if (rs.next()) {
-					ps2.setString(1, rs.getString(1));
+					ps2.setString(3, rs.getString(1));
 					ps2.setInt(2, rs.getInt(2));
 					ps2.executeUpdate();
 					
-					ps3.setInt(1, borrowingID);
-					ps3.setString(2, bid);
-					ps3.setString(3, rs.getString(1));
-					ps3.setInt(4, rs.getInt(2));
-					ps3.setDate(5, new java.sql.Date(today.getTime()));
-					ps3.setDate(6, null);
+					ps3.setString(1, bid);
+					ps3.setString(2, rs.getString(1));
+					ps3.setInt(3, rs.getInt(2));
+					ps3.setDate(4, new java.sql.Date(today.getTime()));
+					ps3.setDate(5, null);
 					ps3.executeUpdate();
 					
-					result.concat("Successfully checked out " + rs.getString(3) + ". Due on " + borrowerDueDate + "\r\n");
-					borrowingID++;
+					result.concat("Successfully checked out " + rs.getString(3) + ". Due on " + getDueDate(today, borrowerType) + "\r\n");
 				}
 			}
 			conn.commit();
@@ -355,7 +352,7 @@ public class LibrarySQLUtil {
 		// TODO Auto-generated method stub
 		return new ArrayList<String[]>();
 	}
-
+    
 	public static String getOverdueEmail(String callNumber, String borrowerid) {
 		return "email";
 		// TODO Auto-generated method stub
