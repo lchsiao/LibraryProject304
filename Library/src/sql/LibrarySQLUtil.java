@@ -107,6 +107,7 @@ public class LibrarySQLUtil {
 	    String borrowerType;
 		try {
 			PreparedStatement p = conn.prepareStatement("SELECT bid,bType FROM borrower WHERE bid=?");
+			p.setString(1, bid);
 			ResultSet temp = p.executeQuery();
 			if (temp.next() == false) {
 				return "Borrower ID not found.";
@@ -119,7 +120,7 @@ public class LibrarySQLUtil {
 		}
 		
 		try {
-			PreparedStatement ps = conn.prepareStatement("SELECT callNumber,copyNo,title FROM bookCopy,book WHERE bookCopy.callNumber = book.callNumber AND callNumber=? AND copyStatus='in'");
+			PreparedStatement ps = conn.prepareStatement("SELECT callNumber,copyNo,title FROM bookCopy,book WHERE bookCopy.callNumber=book.callNumber AND callNumber=? AND copyStatus='in'");
 			PreparedStatement ps2 = conn.prepareStatement("UPDATE bookCopy SET copyStatus='in' WHERE callNumber=? AND copyNo=?");
 			PreparedStatement ps3 = conn.prepareStatement("INSERT INTO borrowing (borid,bid,callNumber,copyNo,outDate,inDate) VALUES (seq_borrowing.nextval,?,?,?,?,?)");
 			
@@ -127,7 +128,7 @@ public class LibrarySQLUtil {
 				ps.setString(1,items.get(i));
 				rs = ps.executeQuery();
 				if (rs.next()) {
-					ps2.setString(3, rs.getString(1));
+					ps2.setString(1, rs.getString(1));
 					ps2.setInt(2, rs.getInt(2));
 					ps2.executeUpdate();
 					
@@ -333,8 +334,61 @@ public class LibrarySQLUtil {
 		return dueDate;
 	}
     
-	public static String checkAcct(String bid) {
+	public static List<List<String[]>> checkAcct(String bid) {
 		// TODO Auto-generated method stub
+		List<List<String[]>> result = new ArrayList<List<String[]>>();
+		List<String[]> borrows = new ArrayList<String[]>(), fines = new ArrayList<String[]>(), holds = new ArrayList<String[]>();
+		String title, callNumber, borrowerType, dueDate, fineAmount, callNum;
+		try {
+			PreparedStatement p = conn.prepareStatement("SELECT bType FROM borrower WHERE bid=?");
+			ResultSet r = p.executeQuery();
+			if (!r.next())
+				return null;
+			borrowerType = r.getString(1);
+			PreparedStatement ps = conn.prepareStatement("SELECT title,book.callNumber,outDate FROM book,borrowing "
+                                                         + "WHERE book.callNumber=borrowing.callNumber AND bid=? AND inDate IS NULL");
+			PreparedStatement ps2 = conn.prepareStatement("SELECT amount,callNumber FROM fine,borrowing WHERE bid=? AND fine.borid=borrowing.borid");
+			PreparedStatement ps3 = conn.prepareStatement("SELECT callNumber,title FROM holdRequest,book WHERE holdRequest.callNumber = book.callNumber AND bid=?");
+			ps.setString(1, bid);
+			ResultSet rs = ps.executeQuery();
+			while (rs.next()) {
+				rs.getString(1);
+				title = rs.getString(1);
+				callNumber = rs.getString(2);
+				dueDate = "" + getDueDate(rs.getDate(3), borrowerType) + "";
+				String[] borrow = {title, callNumber, dueDate};
+				borrows.add(borrow);
+			}
+			rs.close();
+			ps.close();
+			ps2.setString(1, bid);
+			ResultSet rs2 = ps2.executeQuery();
+			while (rs2.next()) {
+				fineAmount = Integer.toString(rs2.getInt(1));
+				callNum = rs2.getString(2);
+				String[] fine = {fineAmount, callNum};
+				fines.add(fine);
+			}
+			rs2.close();
+			ps2.close();
+			ps3.setString(1,bid);
+			ResultSet rs3 = ps3.executeQuery();
+			while (rs3.next()) {
+				callNum = rs3.getString(1);
+				title = rs3.getString(2);
+				String[] hold = {callNum, title};
+				holds.add(hold);
+			}
+			rs3.close();
+			ps3.close();
+			result.add(borrows);
+			result.add(fines);
+			result.add(holds);
+			return result;
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		return null;
 	}
     
