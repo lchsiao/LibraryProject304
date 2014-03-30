@@ -214,8 +214,10 @@ public class BorrowerTabPanel extends UserTabPanel {
 		String[][] data = result.toArray(new String[result.size()][]);
 		if (data.length != 0) {
 			
+			Dimension d = booksFrame.getToolkit().getScreenSize();
+			
 			JTable booksTable = new JTable(data, booksTableHeader);
-			booksTable.setPreferredScrollableViewportSize(new Dimension(600, booksTable.getPreferredSize().height));
+			booksTable.setPreferredScrollableViewportSize(new Dimension(600, Math.min(booksTable.getPreferredSize().height, d.height)));
 			booksTable.setFillsViewportHeight(true);
 			JScrollPane scroll = new JScrollPane(booksTable);
 			
@@ -223,7 +225,6 @@ public class BorrowerTabPanel extends UserTabPanel {
 			booksFrame.pack();
 			
 			// center the frame
-			Dimension d = booksFrame.getToolkit().getScreenSize();
 			Rectangle r = booksFrame.getBounds();
 			booksFrame.setLocation( (d.width - r.width)/2, (d.height - r.height)/2 );
 			
