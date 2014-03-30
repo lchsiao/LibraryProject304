@@ -348,15 +348,15 @@ public class LibrarySQLUtil {
 			borrowerType = r.getString(1);
 			
 			// REMEMBER!! also return the bookCopyNumber in the search query (ask Jimmy)
-			PreparedStatement ps = conn.prepareStatement("SELECT title,book.callNumber,outDate" 
+			PreparedStatement ps = conn.prepareStatement("SELECT title,book.callNumber,outDate"
 														 + " FROM book,borrowing "
                                                          + " WHERE book.callNumber=borrowing.callNumber AND bid=? AND inDate IS NULL");
-			PreparedStatement ps2 = conn.prepareStatement("SELECT amount,callNumber" 
-                                                         + " FROM fine,borrowing" 
-                                                         + " WHERE fine.borid=borrowing.borid AND bid=?");
-			PreparedStatement ps3 = conn.prepareStatement("SELECT book.callNumber,title" 
-                                                         + " FROM holdRequest,book" 
-                                                         + " WHERE holdRequest.callNumber = book.callNumber AND bid=?");
+			PreparedStatement ps2 = conn.prepareStatement("SELECT amount,callNumber"
+                                                          + " FROM fine,borrowing"
+                                                          + " WHERE fine.borid=borrowing.borid AND bid=?");
+			PreparedStatement ps3 = conn.prepareStatement("SELECT book.callNumber,title"
+                                                          + " FROM holdRequest,book"
+                                                          + " WHERE holdRequest.callNumber = book.callNumber AND bid=?");
 			ps.setString(1, bid);
 			ResultSet rs = ps.executeQuery();
 			while (rs.next()) {
@@ -439,6 +439,7 @@ public class LibrarySQLUtil {
 			ps4.setInt(2, tempCopyNo);
 			ps4.executeUpdate();
 			ps4.close();
+			conn.commit();
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -446,9 +447,38 @@ public class LibrarySQLUtil {
 		return "Hold request for item " + callNumber + " was successful.";
 	}
     
-	public static String payFines(String borid, String amount) {
+	public static String payFines(int borid, int amount) {
 		// TODO Auto-generated method stub
-		return null;
+		try {
+			int moneyOwed;
+			PreparedStatement ps = conn.prepareStatement("SELECT amount FROM fine WHERE borid=?");
+			ps.setInt(1, borid);
+			ResultSet rs = ps.executeQuery();
+			if (!rs.next()) {
+				rs.close();
+				ps.close();
+				return "No fine is owed from this borrowing transaction.";
+			}
+			moneyOwed = rs.getInt(1);
+			if ((moneyOwed - amount) <= 0) {
+				PreparedStatement ps2 = conn.prepareStatement("DELETE FROM fine WHERE borid=?");
+				ps2.setInt(1, borid);
+				ps2.executeUpdate();
+				ps2.close();
+				conn.commit();
+				return "Successfully paid fine.";
+			}
+			PreparedStatement ps3 = conn.prepareStatement("UPDATE fine SET amount=? WHERE borid=?");
+			ps3.setInt(1, (moneyOwed - amount));
+			ps3.setInt(2, borid);
+			ps3.executeUpdate();
+			ps3.close();
+			conn.commit();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return "Thank you for your payment. Please pay the remainder of the fine soon.";
 	}
 	
 	public static List<String[]> getOverdueItems() {
@@ -461,18 +491,18 @@ public class LibrarySQLUtil {
 		// TODO Auto-generated method stub
 		
 	}
-
+    
 	public static String addBook(String callNumber, String isbn, String title,
-			String author, String publisher, String publishedYear) {
+                                 String author, String publisher, String publishedYear) {
 		// TODO Auto-generated method stub
 		return null;
 	}
-
+    
 	public static String generateBookReport(String subject) {
 		// TODO Auto-generated method stub
 		return null;
 	}
-
+    
 	public static String listMostPopularItems(String year, String n) {
 		// TODO Auto-generated method stub
 		return null;
