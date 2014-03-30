@@ -5,6 +5,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -275,5 +276,16 @@ public class LibrarySQLUtil {
 	public static String payFines(String borid, String amount) {
 		// TODO Auto-generated method stub
 		return null;
+	}
+	
+	public static List<String[]> getOverdueItems() {
+		// TODO Auto-generated method stub
+		return new ArrayList<String[]>();
+	}
+
+	public static String getOverdueEmail(String callNumber, String borrowerid) {
+		return "email";
+		// TODO Auto-generated method stub
+		
 	}
 }

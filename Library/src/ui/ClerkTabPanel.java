@@ -1,6 +1,7 @@
 package ui;
 import java.awt.BorderLayout;
 import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
@@ -14,6 +15,8 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.border.EmptyBorder;
 
@@ -45,9 +48,16 @@ public class ClerkTabPanel extends UserTabPanel {
 	
 	// processReturn fields
 	private static final String PROCESS_RETURN_ACTION = "PROCESSRETURN";
-	
+
 	private JTextField returnIDField;
+	
+	// checkOverdueItems fields
+	private static final String SEND_NOTIFICATION_ACTION = "SENDNOTICIATION";
+			
+	private JLabel itemCallNumberLabel;
 	private JTextField copyNumberField;
+	private JLabel borrowerIDLabel;
+	private JPanel checkOverdueItemsPanel;
 
 	@Override
 	protected void initializeCards() {
@@ -147,16 +157,6 @@ public class ClerkTabPanel extends UserTabPanel {
 		this.addCard("Check-out Items", checkOutItemsPanel);
 
 	}
-	
-
-	private void createOverdueItemsPanel() {
-		
-		JPanel checkOverdueItemsPanel = new JPanel();
-
-		//TODO
-		
-		this.addCard("Check Overdue Items", checkOverdueItemsPanel);
-	}
 
 
 	private void createProcessReturnPanel() {
@@ -170,12 +170,12 @@ public class ClerkTabPanel extends UserTabPanel {
 		returnIDField = new JTextField();
 		processReturnPanelTop.add(returnIDLabel);
 		processReturnPanelTop.add(returnIDField);
-
+		
 		JLabel copyLabel = new JLabel("Copy Number:");
 		copyNumberField = new JTextField();
 		processReturnPanelTop.add(copyLabel);
 		processReturnPanelTop.add(copyNumberField);
-		
+
 		processReturnPanel.add(processReturnPanelTop, BorderLayout.PAGE_START);
 
 		JButton processReturnSubmit = new JButton("Process Return");
@@ -184,6 +184,24 @@ public class ClerkTabPanel extends UserTabPanel {
 		processReturnSubmit.setActionCommand(PROCESS_RETURN_ACTION);
 		
 		this.addCard("Process Return", processReturnPanel);
+	}
+	
+	
+	private void createOverdueItemsPanel() {
+		
+		JPanel wrapperPanel = new JPanel();
+		JScrollPane checkOverdueItemsScrollPane = new JScrollPane();
+		checkOverdueItemsPanel = new JPanel(new GridLayout(0, 3, 10, 10));
+		checkOverdueItemsPanel.setBorder(new EmptyBorder(10, 10, 10, 10));
+		
+		itemCallNumberLabel = new JLabel("Call Number");
+		borrowerIDLabel = new JLabel("Borrower ID");
+		
+		wrapperPanel.add(checkOverdueItemsScrollPane);
+		
+		this.addCard("Check Overdue Items", wrapperPanel);
+		
+		updateOverdueItems();
 	}
 	
 	
@@ -241,9 +259,8 @@ public class ClerkTabPanel extends UserTabPanel {
 	}
 	
 	
-	private void removeItem(PositionAwareButton source) {
+	private void removeItem(int buttonPosition) {
 		
-		int buttonPosition = source.getPosition();
 		int rowStartPosition = buttonPosition - 2;
 		int listPosition = buttonPosition/3 - 2;
 		
@@ -305,7 +322,6 @@ public class ClerkTabPanel extends UserTabPanel {
 	private boolean processReturn() {
 		
 		String returnID = returnIDField.getText();
-
 		String copyNumber = copyNumberField.getText();
 		
 		if (returnID.isEmpty() || copyNumber.isEmpty()) {
@@ -325,6 +341,45 @@ public class ClerkTabPanel extends UserTabPanel {
 		return true;
 		
 	}
+	
+	
+	private void updateOverdueItems() {
+		
+		checkOverdueItemsPanel.removeAll();
+		
+		checkOverdueItemsPanel.add(itemCallNumberLabel);
+		checkOverdueItemsPanel.add(borrowerIDLabel);
+		checkOverdueItemsPanel.add(Box.createHorizontalGlue());
+		
+		List<String[]> items = LibrarySQLUtil.getOverdueItems();
+		
+		for (String[] item : items) {
+			
+			int position = (checkOverdueItemsPanel.getComponentCount() - 1) + 3;
+			
+			checkOverdueItemsPanel.add(new JLabel(item[0]));
+			checkOverdueItemsPanel.add(new JLabel(item[1]));
+			PositionAwareButton sendNotificationButton = new PositionAwareButton("Send Notification");
+			sendNotificationButton.setPosition(position);
+			sendNotificationButton.setActionCommand(SEND_NOTIFICATION_ACTION);
+			sendNotificationButton.addActionListener(this);
+		}
+		
+		checkOverdueItemsPanel.getParent().validate();
+	}
+	
+	
+	private void sendOverdueEmail(int buttonPosition) {
+		
+		JTextField callNumberField = (JTextField) checkOverdueItemsPanel.getComponent(buttonPosition-2);
+		JTextField borroweridField = (JTextField) checkOverdueItemsPanel.getComponent(buttonPosition-1);
+		
+		String callNumber = callNumberField.getText();
+		String borrowerid = borroweridField.getText();
+		
+		String email = LibrarySQLUtil.getOverdueEmail(callNumber, borrowerid);
+		JOptionPane.showMessageDialog(this, "Send email to " + email);
+	}
 
 	
 	@Override
@@ -342,10 +397,16 @@ public class ClerkTabPanel extends UserTabPanel {
 				addItem();
 				break;
 			case REMOVE_ITEM_ACTION:
-				removeItem((PositionAwareButton)e.getSource());
+				int buttonPosition = ((PositionAwareButton)e.getSource()).getPosition();
+				removeItem(buttonPosition);
 				break;
 			case PROCESS_RETURN_ACTION:
 				processReturn();
+				break;
+			case SEND_NOTIFICATION_ACTION:
+				buttonPosition = ((PositionAwareButton)e.getSource()).getPosition();
+				sendOverdueEmail(buttonPosition);
+				break;
 				
 		}
 
