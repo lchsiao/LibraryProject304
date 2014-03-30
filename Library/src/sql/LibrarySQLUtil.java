@@ -361,14 +361,20 @@ public class LibrarySQLUtil {
 		String title, callNumber, borrowerType, dueDate, fineAmount, callNum;
 		try {
 			PreparedStatement p = conn.prepareStatement("SELECT bType FROM borrower WHERE bid=?");
+			p.setString(1, bid);
 			ResultSet r = p.executeQuery();
 			if (!r.next())
 				return null;
 			borrowerType = r.getString(1);
-			PreparedStatement ps = conn.prepareStatement("SELECT title,book.callNumber,outDate FROM book,borrowing "
-                                                         + "WHERE book.callNumber=borrowing.callNumber AND bid=? AND inDate IS NULL");
-			PreparedStatement ps2 = conn.prepareStatement("SELECT amount,callNumber FROM fine,borrowing WHERE bid=? AND fine.borid=borrowing.borid");
-			PreparedStatement ps3 = conn.prepareStatement("SELECT callNumber,title FROM holdRequest,book WHERE holdRequest.callNumber = book.callNumber AND bid=?");
+			PreparedStatement ps = conn.prepareStatement("SELECT title,book.callNumber,outDate" 
+														 + " FROM book,borrowing "
+                                                         + " WHERE book.callNumber=borrowing.callNumber AND bid=? AND inDate IS NULL");
+			PreparedStatement ps2 = conn.prepareStatement("SELECT amount,callNumber" 
+                                                         + " FROM fine,borrowing" 
+                                                         + " WHERE fine.borid=borrowing.borid AND bid=?");
+			PreparedStatement ps3 = conn.prepareStatement("SELECT book.callNumber,title" 
+                                                         + " FROM holdRequest,book" 
+                                                         + " WHERE holdRequest.callNumber = book.callNumber AND bid=?");
 			ps.setString(1, bid);
 			ResultSet rs = ps.executeQuery();
 			while (rs.next()) {
@@ -404,12 +410,11 @@ public class LibrarySQLUtil {
 			result.add(borrows);
 			result.add(fines);
 			result.add(holds);
-			return result;
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		return null;
+		return result;
 	}
     
 	public static String holdRequest(String bid, String callNumber) {
