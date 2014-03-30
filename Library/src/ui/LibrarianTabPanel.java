@@ -1,12 +1,42 @@
 package ui;
 
+import java.awt.BorderLayout;
+import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 
+import javax.swing.JButton;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JTextField;
+import javax.swing.border.EmptyBorder;
 
 @SuppressWarnings("serial")
 public class LibrarianTabPanel extends UserTabPanel {
 
+	//addBook fields
+	private static final String ADD_BOOK_ACTION = "ADDBOOK";
+	
+	private JTextField callNumberField;
+	private JTextField isbnField;
+	private JTextField titleField;
+	private JTextField authorField;
+	private JTextField publisherField;
+	private JTextField publishedYearField;	
+	
+	
+	//generateBookReport fields
+	private static final String GENERATE_BOOK_REPORT_ACTION = "GENBOOKREPORT";
+	
+	private JTextField subjectField;
+	
+	
+	//listMostPopularItems fields
+	private static final String LIST_MOST_POPULAR_ITEMS_ACTION = "LISTPOPITEMS";
+	
+	private JTextField yearField;
+	private JTextField nField;
+	
+	
 	@Override
 	protected void initializeCards() {
 		
@@ -17,39 +47,162 @@ public class LibrarianTabPanel extends UserTabPanel {
 	}
 	
 	
+	/**
+	 * Adds a new book or new copy of an existing book to the library. 
+	 * The librarian provides the information for the new book, and the system adds it to the library.
+	 */
+	
 	private void createAddBookPanel() {
 		
-		JPanel createAddBookPanel = new JPanel();
-
-		//TODO
 		
+		JPanel createAddBookPanel = new JPanel(new BorderLayout());
+		createAddBookPanel.setBorder(new EmptyBorder(0, 10, 10, 10));
+		JPanel createAddBookPanelTop = new JPanel(new GridLayout(0, 2, 10, 10));
+		createAddBookPanelTop.setBorder(new EmptyBorder(10, 10, 10, 10));
+
+		JLabel callNumberLabel = new JLabel("Call Number:");
+		callNumberField = new JTextField();
+		createAddBookPanelTop.add(callNumberLabel);
+		createAddBookPanelTop.add(callNumberField);
+
+		
+		JLabel isbnLabel = new JLabel("ISBN:");
+		isbnField = new JTextField();
+		createAddBookPanelTop.add(isbnLabel);
+		createAddBookPanelTop.add(isbnField);
+
+		JLabel titleLabel = new JLabel("Book Title:");
+		titleField = new JTextField();
+		createAddBookPanelTop.add(titleLabel);
+		createAddBookPanelTop.add(titleField);
+		
+		JLabel authorLabel = new JLabel("Main Author:");
+		authorField = new JTextField();
+		createAddBookPanelTop.add(authorLabel);
+		createAddBookPanelTop.add(authorField);
+		
+		JLabel publisherLabel = new JLabel("Publisher:");
+		publisherField = new JTextField();
+		createAddBookPanelTop.add(publisherLabel);
+		createAddBookPanelTop.add(publisherField);
+		
+		JLabel publishedYearLabel = new JLabel("Published Year:");
+		publishedYearField = new JTextField();
+		createAddBookPanelTop.add(publishedYearLabel);
+		createAddBookPanelTop.add(publishedYearField);
+		
+		createAddBookPanel.add(createAddBookPanelTop, BorderLayout.PAGE_START);
+
+		JButton addBookSubmit = new JButton("Add Book");
+		createAddBookPanel.add(addBookSubmit, BorderLayout.CENTER);
+		addBookSubmit.addActionListener(this);
+		addBookSubmit.setActionCommand(ADD_BOOK_ACTION);
+
 		this.addCard("Add Book", createAddBookPanel);
 	}
 
 
+	/**
+	 * Generate a report with all the books that have been checked out. 
+	 * 
+	 * For each book the report shows the date it was checked out and the due date. 
+	 * The system flags the items that are overdue. 
+	 * The items are ordered by the book call number. 
+	 * If a subject is provided the report lists only books related to that subject, 
+	 * otherwise all the books that are out are listed by the report.
+	 */
+	
 	private void createGenerateBookReportPanel() {
 		
-		JPanel createGenerateBookReportPanel = new JPanel();
+		JPanel createGenerateBookReportPanel = new JPanel(new BorderLayout());
+		createGenerateBookReportPanel.setBorder(new EmptyBorder(0, 10, 10, 10));
+		JPanel createGenerateBookReportPanelTop = new JPanel(new GridLayout(0, 2, 10, 10));
+		createGenerateBookReportPanelTop.setBorder(new EmptyBorder(10, 10, 10, 10));
+		
+		JLabel subjectLabel = new JLabel("Optional Subject:");
+		subjectField = new JTextField();
+		createGenerateBookReportPanelTop.add(subjectLabel);
+		createGenerateBookReportPanelTop.add(subjectField);
+		
+		createGenerateBookReportPanel.add(createGenerateBookReportPanelTop, BorderLayout.PAGE_START);
 
-		//TODO
+		JButton generateBookReportSubmit = new JButton("Generate Book Report");
+		createGenerateBookReportPanel.add(generateBookReportSubmit, BorderLayout.CENTER);
+		generateBookReportSubmit.addActionListener(this);
+		generateBookReportSubmit.setActionCommand(GENERATE_BOOK_REPORT_ACTION);
 		
 		this.addCard("Generate Book Report", createGenerateBookReportPanel);
 	}
 
 
+	/**
+	 * Generate a report with the most popular items in a given year. 
+	 * 
+	 * The librarian provides a year and a number n. 
+	 * The system lists out the top n books that where borrowed the most times during that year. 
+	 * The books are ordered by the number of times they were borrowed.
+	 */
+	
 	private void createListMostPopularItemsPanel() {
 		
-		JPanel createListMostPopularItemsPanel = new JPanel();
+		JPanel createListMostPopularItemsPanel = new JPanel(new BorderLayout());
+		createListMostPopularItemsPanel.setBorder(new EmptyBorder(0, 10, 10, 10));
+		JPanel createListMostPopularItemsPanelTop = new JPanel(new GridLayout(0, 2, 10, 10));
+		createListMostPopularItemsPanelTop.setBorder(new EmptyBorder(10, 10, 10, 10));
+		
+		JLabel yearLabel = new JLabel("Year:");
+		yearField = new JTextField();
+		createListMostPopularItemsPanelTop.add(yearLabel);
+		createListMostPopularItemsPanelTop.add(yearField);
+		
+		JLabel nLabel = new JLabel("Number of top books to be displayed:");
+		nField = new JTextField();
+		createListMostPopularItemsPanelTop.add(nLabel);
+		createListMostPopularItemsPanelTop.add(nField);
+		
+		createListMostPopularItemsPanel.add(createListMostPopularItemsPanelTop, BorderLayout.PAGE_START);
 
-		//TODO
+		JButton listMostPopularItemsSubmit = new JButton("List Most Popular Items");
+		createListMostPopularItemsPanel.add(listMostPopularItemsSubmit, BorderLayout.CENTER);
+		listMostPopularItemsSubmit.addActionListener(this);
+		listMostPopularItemsSubmit.setActionCommand(LIST_MOST_POPULAR_ITEMS_ACTION);
 		
 		this.addCard("List Most Popular Items", createListMostPopularItemsPanel);
 	}
 
 
-	@Override
-	public void actionPerformed(ActionEvent arg0) {
+	private void addBook() {
 		// TODO Auto-generated method stub
 		
+	}
+
+
+	private void generateBookReport() {
+		// TODO Auto-generated method stub
+		
+	}
+
+
+	private void listMostPopularItems() {
+		// TODO Auto-generated method stub
+		
+	}
+
+
+	@Override
+	public void actionPerformed(ActionEvent e) {
+		
+		switch (e.getActionCommand()) {
+		
+		case ADD_BOOK_ACTION:
+			addBook();
+			break;
+		case GENERATE_BOOK_REPORT_ACTION:
+			generateBookReport();
+			break;
+		case LIST_MOST_POPULAR_ITEMS_ACTION:
+			listMostPopularItems();
+			break;
+		}			
 	}
 }

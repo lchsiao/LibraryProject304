@@ -366,6 +366,8 @@ public class LibrarySQLUtil {
 			if (!r.next())
 				return null;
 			borrowerType = r.getString(1);
+			
+			// REMEMBER!! also return the bookCopyNumber in the search query (ask Jimmy)
 			PreparedStatement ps = conn.prepareStatement("SELECT title,book.callNumber,outDate" 
 														 + " FROM book,borrowing "
                                                          + " WHERE book.callNumber=borrowing.callNumber AND bid=? AND inDate IS NULL");
@@ -382,7 +384,7 @@ public class LibrarySQLUtil {
 				title = rs.getString(1);
 				callNumber = rs.getString(2);
 				dueDate = "" + getDueDate(rs.getDate(3), borrowerType) + "";
-				String[] borrow = {title, callNumber, dueDate};
+				String[] borrow = {callNumber, title, dueDate};
 				borrows.add(borrow);
 			}
 			rs.close();
