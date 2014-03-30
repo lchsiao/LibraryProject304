@@ -532,10 +532,10 @@ public class LibrarySQLUtil {
 			e.printStackTrace();
 		}
 		
-		return email;
-		
+		return email;	
 	}
     
+	
 	public static String addBook(String callNumber, String isbn, String title,
                                  String author, String publisher, String publishedYear) {
 		// TODO Auto-generated method stub
@@ -561,22 +561,26 @@ public class LibrarySQLUtil {
 		}
 		return SUCCESS_STRING + "New book " +  "added.";
 		
-		
-		
-		
 	}
     
 	/**
 	 * Generate a report with all the books that have been checked out. 
 	 * 
-	 * should return List<String[]>: Call Number, Copy No, Title, CheckOut Date, Due Date, Overdue Y/N?
+	 * should return List<String[]>: Call Number, Copy Num, Title, CheckOut Date, Due Date, Overdue Y/N?
 	 * should be ordered by Call Number
 	 * if Subject field is not empty, generate checkOut books pertaining to the subject
 	**/
 	
-	public static String generateBookReport(String subject) {
+	public static List<String[]> generateBookReport(String subject) {
 		// TODO Auto-generated method stub
-		return null;
+		List<String[]> result = new ArrayList<String[]>();
+		String[] book = {callNum, copyNum, title, checkOut, dueDate, overdue};
+		
+		
+		result.add(book);
+		
+		return result;
+		
 	}
     
 	

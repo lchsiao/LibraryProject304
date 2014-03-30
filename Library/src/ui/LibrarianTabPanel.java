@@ -3,8 +3,10 @@ package ui;
 import java.awt.BorderLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
+import java.util.List;
 
 import javax.swing.JButton;
+import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -30,11 +32,16 @@ public class LibrarianTabPanel extends UserTabPanel {
 	//generateBookReport fields
 	private static final String GENERATE_BOOK_REPORT_ACTION = "GENBOOKREPORT";
 	
-	private JTextField subjectField;
+	private static final String[] HEADER_BOOK_REPORT =  new String[] {"Call Number", "Copy No", "Title",
+																		"CheckOut Date", "Due Date", "Overdue Y/N?"};
 	
+	private JTextField subjectField;
+	private JFrame bookReportFrame;
 	
 	//listMostPopularItems fields
 	private static final String LIST_MOST_POPULAR_ITEMS_ACTION = "LISTPOPITEMS";
+
+	
 	
 	private JTextField yearField;
 	private JTextField nField;
@@ -206,13 +213,11 @@ public class LibrarianTabPanel extends UserTabPanel {
 		
 		String subject = subjectField.getText();
 		
-		String result = LibrarySQLUtil.generateBookReport(subject);
-		if (result.contains(LibrarySQLUtil.SUCCESS_STRING)) {
-			JOptionPane.showMessageDialog(this, result);
-		} else {
-			JOptionPane.showMessageDialog(this, result, "Error", JOptionPane.ERROR_MESSAGE);
-		}
+		List<String[]> result = LibrarySQLUtil.generateBookReport(subject);
+		String[][] bookReportData = new String[result.get(0).length][];
 		
+		createAndDisplayPopupTable(bookReportFrame, bookReportData, HEADER_BOOK_REPORT);
+	
 	}
 
 
