@@ -222,7 +222,7 @@ public class BorrowerTabPanel extends UserTabPanel {
 		}
 		
 		List<String[]> result = LibrarySQLUtil.searchBooks(title, author, subject);
-		if (result.isEmpty()) {
+		if (!result.isEmpty()) {
 			
 			booksPanel.removeAll();
 			

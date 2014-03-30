@@ -77,18 +77,18 @@ public class LibrarySQLUtil {
 		try {
 			PreparedStatement ps = conn.prepareStatement("INSERT INTO borrower (bid,bPass,bName,address,phone,emailAddress,sinOrStNo,expiryDate,bType) "
                                                          + "VALUES (seq_borrower.nextval,?,?,?,?,?,?,?,?)");
-			ps.setString(2, password);
-			ps.setString(3, name);
-			ps.setString(4, address);
-			ps.setString(5, phone);
-			ps.setString(6, email);
-			ps.setInt(7, Integer.parseInt(sinOrStdNo));
+			ps.setString(1, password);
+			ps.setString(2, name);
+			ps.setString(3, address);
+			ps.setString(4, phone);
+			ps.setString(5, email);
+			ps.setInt(6, Integer.parseInt(sinOrStdNo));
 			Calendar cal = Calendar.getInstance();
 			cal.setTime(today);
 			cal.set(Calendar.YEAR, cal.get(Calendar.YEAR) + 1);
-			ps.setDate(8, new java.sql.Date(cal.getTime().getTime()));
-			ps.setString(9, type);
-			ps.executeUpdate();
+			ps.setDate(7, new java.sql.Date(cal.getTime().getTime()));
+			ps.setString(8, type);
+			ps.execute();
 		    conn.commit();
 			ps.close();
 		} catch (SQLException e) {
@@ -168,18 +168,19 @@ public class LibrarySQLUtil {
 		List<String[]> result = new ArrayList<String[]>();
 		ResultSet rs = null, rs2 = null, rs3 = null, rs4 = null;
 		try {
-			PreparedStatement ps = conn.prepareStatement("SELECT callNumber,title "
+			PreparedStatement ps = conn.prepareStatement("SELECT book.callNumber,title "
                                                          + "FROM book,hasAuthor,hasSubject "
-                                                         + "WHERE title LIKE ? OR name=? OR subject=?");
+                                                         + "WHERE book.callNumber=hasAuthor.callNumber AND book.callNumber=hasSubject.callNumber "
+                                                         + "AND (title LIKE ? OR aName=? OR bookSubject=?)");
 			PreparedStatement ps2 = conn.prepareStatement("SELECT COUNT (*) "
                                                           + "FROM bookCopy,book "
-                                                          + "WHERE callNumber=? AND status='in'");
+                                                          + "WHERE bookCopy.callNumber=book.callNumber AND callNumber=? AND copyStatus='in'");
 			PreparedStatement ps3 = conn.prepareStatement("SELECT COUNT (*) "
                                                           + "FROM bookCopy,book "
-                                                          + "WHERE callNumber=? AND status='out'");
+                                                          + "WHERE bookCopy.callNumber=book.callNumber AND callNumber=? AND copyStatus='out'");
 			PreparedStatement ps4 = conn.prepareStatement("SELECT COUNT (*) "
                                                           + "FROM bookCopy,book "
-                                                          + "WHERE callNumber=? AND status='on hold'");
+                                                          + "WHERE bookCopy.callNumber=book.callNumber AND callNumber=? AND copyStatus='on hold'");
 			ps.setString(1, "%" + title + "%");
 			ps.setString(2, author);
 			ps.setString(3, subject);
@@ -188,14 +189,17 @@ public class LibrarySQLUtil {
 			while (rs.next()) {
 				tempCallNumber = rs.getString(1);
 				tempTitle = rs.getString(2);
+				ps2.setString(1, tempCallNumber);
 				rs2 = ps2.executeQuery();
 				if (rs2.next())
 					numIn = rs2.getInt(1);
 				else numIn = 0;
+				ps3.setString(1, tempCallNumber);
 				rs3 = ps3.executeQuery();
 				if (rs3.next())
 					numOut = rs3.getInt(1);
 				else numOut = 0;
+				ps4.setString(1, tempCallNumber);
 				rs4 = ps4.executeQuery();
 				if (rs4.next())
 					numOnHold = rs4.getInt(1);
