@@ -142,6 +142,8 @@ public class LibrarianTabPanel extends UserTabPanel {
 		generateBookReportSubmit.addActionListener(this);
 		generateBookReportSubmit.setActionCommand(GENERATE_BOOK_REPORT_ACTION);
 		
+		bookReportFrame = new JFrame("Book Report");
+		
 		this.addCard("Generate Book Report", createGenerateBookReportPanel);
 	}
 
