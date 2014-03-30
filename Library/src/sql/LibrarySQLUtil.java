@@ -574,10 +574,10 @@ public class LibrarySQLUtil {
 	public static List<String[]> generateBookReport(String subject) {
 		// TODO Auto-generated method stub
 		List<String[]> result = new ArrayList<String[]>();
-		String[] book = {callNum, copyNum, title, checkOut, dueDate, overdue};
+		//String[] book = {callNum, copyNum, title, checkOut, dueDate, overdue};
 		
 		
-		result.add(book);
+		//result.add(book);
 		
 		return result;
 		
@@ -585,7 +585,7 @@ public class LibrarySQLUtil {
     
 	
 	
-	public static String listMostPopularItems(String year, String n) {
+	public static List<String[]> listMostPopularItems(String year, String n) {
 		// TODO Auto-generated method stub
 		return null;
 	}
