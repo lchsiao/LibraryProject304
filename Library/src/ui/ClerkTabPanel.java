@@ -361,6 +361,7 @@ public class ClerkTabPanel extends UserTabPanel {
 			sendNotificationButton.setPosition(position);
 			sendNotificationButton.setActionCommand(SEND_NOTIFICATION_ACTION);
 			sendNotificationButton.addActionListener(this);
+			checkOverdueItemsPanel.add(sendNotificationButton);
 		}
 		
 		checkOverdueItemsPanel.getParent().validate();
@@ -369,13 +370,13 @@ public class ClerkTabPanel extends UserTabPanel {
 	
 	private void sendOverdueEmail(int buttonPosition) {
 		
-		JTextField callNumberField = (JTextField) checkOverdueItemsPanel.getComponent(buttonPosition-2);
-		JTextField borroweridField = (JTextField) checkOverdueItemsPanel.getComponent(buttonPosition-1);
+//		JLabel callNumberField = (JLabel) checkOverdueItemsPanel.getComponent(buttonPosition-2);
+		JLabel bidField = (JLabel) checkOverdueItemsPanel.getComponent(buttonPosition-1);
 		
-		String callNumber = callNumberField.getText();
-		String borrowerid = borroweridField.getText();
+//		String callNumber = callNumberField.getText();
+		String bid = bidField.getText();
 		
-		String email = LibrarySQLUtil.getOverdueEmail(callNumber, borrowerid);
+		String email = LibrarySQLUtil.getOverdueEmail(bid);
 		JOptionPane.showMessageDialog(this, "Send email to " + email);
 	}
 

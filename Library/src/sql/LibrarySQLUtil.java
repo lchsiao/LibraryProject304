@@ -486,7 +486,9 @@ public class LibrarySQLUtil {
 		Date dueDate;
 		Date today = new java.util.Date();
 		try {
-			PreparedStatement ps = conn.prepareStatement("SELECT callNumber,copyNo,bType,emailAddress,outDate FROM borrowing,borrower WHERE borrowing.bid=borrower.bid AND inDate IS NULL");
+			PreparedStatement ps = conn.prepareStatement("SELECT callNumber, copyNo, bType, emailAddress, outDate" 
+														+ " FROM borrowing, borrower" 
+														+ " WHERE borrowing.bid=borrower.bid AND inDate IS NULL");
 			ResultSet rs = ps.executeQuery();
 			while (rs.next()) {
 				borrowerType = rs.getString(3);
@@ -509,9 +511,28 @@ public class LibrarySQLUtil {
 		return result;
 	}
     
-	public static String getOverdueEmail(String callNumber, String borrowerid) {
-		return "email";
-		// TODO Auto-generated method stub
+	public static String getOverdueEmail(String bid) {
+		
+		String email = "";
+		try {
+			PreparedStatement ps = conn.prepareStatement("SELECT emailAddress FROM borrower WHERE bid=?");
+			ps.setString(1, bid);
+			ResultSet rs = ps.executeQuery();
+			
+			if (!rs.next()) {
+				rs.close();
+				ps.close();
+			}
+			
+			email = rs.getString(1);
+			rs.close();
+			ps.close();
+		
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		
+		return email;
 		
 	}
     
@@ -545,11 +566,21 @@ public class LibrarySQLUtil {
 		
 	}
     
+	/**
+	 * Generate a report with all the books that have been checked out. 
+	 * 
+	 * should return List<String[]>: Call Number, Copy No, Title, CheckOut Date, Due Date, Overdue Y/N?
+	 * should be ordered by Call Number
+	 * if Subject field is not empty, generate checkOut books pertaining to the subject
+	**/
+	
 	public static String generateBookReport(String subject) {
 		// TODO Auto-generated method stub
 		return null;
 	}
     
+	
+	
 	public static String listMostPopularItems(String year, String n) {
 		// TODO Auto-generated method stub
 		return null;
