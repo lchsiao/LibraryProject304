@@ -486,9 +486,9 @@ public class LibrarySQLUtil {
 		Date dueDate;
 		Date today = new java.util.Date();
 		try {
-			PreparedStatement ps = conn.prepareStatement("SELECT callNumber, copyNo, bType, emailAddress, outDate" 
-														+ " FROM borrowing, borrower" 
-														+ " WHERE borrowing.bid=borrower.bid AND inDate IS NULL");
+			PreparedStatement ps = conn.prepareStatement("SELECT callNumber, copyNo, bType, emailAddress, outDate"
+                                                         + " FROM borrowing, borrower"
+                                                         + " WHERE borrowing.bid=borrower.bid AND inDate IS NULL");
 			ResultSet rs = ps.executeQuery();
 			while (rs.next()) {
 				borrowerType = rs.getString(3);
@@ -527,12 +527,12 @@ public class LibrarySQLUtil {
 			email = rs.getString(1);
 			rs.close();
 			ps.close();
-		
+            
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
 		
-		return email;	
+		return email;
 	}
     
 	
@@ -564,20 +564,48 @@ public class LibrarySQLUtil {
 	}
     
 	/**
-	 * Generate a report with all the books that have been checked out. 
-	 * 
+	 * Generate a report with all the books that have been checked out.
+	 *
 	 * should return List<String[]>: Call Number, Copy Num, Title, CheckOut Date, Due Date, Overdue Y/N?
 	 * should be ordered by Call Number
 	 * if Subject field is not empty, generate checkOut books pertaining to the subject
-	**/
+     **/
 	
 	public static List<String[]> generateBookReport(String subject) {
 		// TODO Auto-generated method stub
 		List<String[]> result = new ArrayList<String[]>();
-		String[] book = {callNum, copyNum, title, checkOut, dueDate, overdue};
+		Date outDate, dateDue, today = new java.util.Date();
+		String callNum, copyNum, title, checkOut, dueDate, overdue = "false", borrowerType;
+		PreparedStatement ps;
+		try {
+			if (subject.isEmpty()) {
+			    ps = conn.prepareStatement("SELECT book.callNumber,copyNumber,title,outDate,bType FROM book,borrowing,borrower "
+                                           + "WHERE borrowing.callNumber=book.callNumber AND borrower.bid=borrowing.bid AND inDate IS NULL");
+			} else {
+				ps = conn.prepareStatement("SELECT book.callNumber,copyNumber,title,outDate,bType FROM book,borrowing,borrower,hasSubject "
+                                           + "WHERE borrowing.callNumber=book.callNumber AND borrower.bid=borrowing.bid AND inDate IS NULL AND bookSubject=? AND hasSubject.callNumber=borrowing.callNumber");
+			}
+			ResultSet rs = ps.executeQuery();
+     		while (rs.next()) {
+				callNum = rs.getString(1);
+				copyNum = Integer.toString(rs.getInt(2));
+				title = rs.getString(3);
+				outDate = rs.getDate(4);
+				checkOut = "" + outDate + "";
+				checkOut = checkOut.substring(0, 16).concat(checkOut.substring(24, 28));
+				borrowerType = rs.getString(5);
+				dateDue = getDueDate(outDate, borrowerType);
+				dueDate = "" + dateDue + "";
+				if (today.after(dateDue))
+					overdue = "true";
+				String[] book = {callNum, copyNum, title, checkOut, dueDate, overdue};
+				result.add(book);
+			}
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		
-		
-		result.add(book);
 		
 		return result;
 		
