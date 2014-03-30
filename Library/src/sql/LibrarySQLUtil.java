@@ -174,13 +174,13 @@ public class LibrarySQLUtil {
                                                          + "AND (title LIKE ? OR aName=? OR bookSubject=?)");
 			PreparedStatement ps2 = conn.prepareStatement("SELECT COUNT (*) "
                                                           + "FROM bookCopy,book "
-                                                          + "WHERE bookCopy.callNumber=book.callNumber AND callNumber=? AND copyStatus='in'");
+                                                          + "WHERE bookCopy.callNumber=book.callNumber AND book.callNumber=? AND copyStatus='in'");
 			PreparedStatement ps3 = conn.prepareStatement("SELECT COUNT (*) "
                                                           + "FROM bookCopy,book "
-                                                          + "WHERE bookCopy.callNumber=book.callNumber AND callNumber=? AND copyStatus='out'");
+                                                          + "WHERE bookCopy.callNumber=book.callNumber AND book.callNumber=? AND copyStatus='out'");
 			PreparedStatement ps4 = conn.prepareStatement("SELECT COUNT (*) "
                                                           + "FROM bookCopy,book "
-                                                          + "WHERE bookCopy.callNumber=book.callNumber AND callNumber=? AND copyStatus='on hold'");
+                                                          + "WHERE bookCopy.callNumber=book.callNumber AND book.callNumber=? AND copyStatus='on hold'");
 			ps.setString(1, "%" + title + "%");
 			ps.setString(2, author);
 			ps.setString(3, subject);
