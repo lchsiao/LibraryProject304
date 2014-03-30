@@ -5,8 +5,6 @@ import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
 import java.util.List;
 
 import javax.swing.JButton;
@@ -14,6 +12,8 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.border.EmptyBorder;
 
@@ -26,12 +26,7 @@ public class BorrowerTabPanel extends UserTabPanel {
 	private static final String SEARCH_BOOKS_ACTION = "SEARCHBOOKS";
 	
 	private JFrame booksFrame;
-	private JPanel booksPanel;
-	private JLabel bookTitleLabel;
-	private JLabel bookCallNumberLabel;
-	private JLabel bookInLabel;
-	private JLabel bookOutLabel;
-	private JLabel bookOnHoldLabel;
+	private String[] booksTableHeader;
 	private JTextField titleField;
 	private JTextField authorField;
 	private JTextField subjectField;
@@ -102,13 +97,7 @@ public class BorrowerTabPanel extends UserTabPanel {
 		searchBooksSubmit.setActionCommand(SEARCH_BOOKS_ACTION);
 		
 		booksFrame = new JFrame();
-		booksPanel = new JPanel(new GridLayout(0, 5, 10, 10));
-		booksFrame.add(booksPanel);
-		bookCallNumberLabel = new JLabel("Call No.");
-		bookInLabel = new JLabel("In");
-		bookOnHoldLabel = new JLabel("On Hold");
-		bookOutLabel = new JLabel("On");
-		bookTitleLabel = new JLabel("Title");
+		booksTableHeader = new String[] {"Title", "Call No.", "In", "On", "On Hold"};
 		
 		this.addCard("Search Books", createSearchBooksPanel);
 	}
@@ -222,22 +211,15 @@ public class BorrowerTabPanel extends UserTabPanel {
 		}
 		
 		List<String[]> result = LibrarySQLUtil.searchBooks(title, author, subject);
-		if (!result.isEmpty()) {
+		String[][] data = result.toArray(new String[result.size()][]);
+		if (data.length != 0) {
 			
-			booksPanel.removeAll();
+			JTable booksTable = new JTable(data, booksTableHeader);
+			booksTable.setPreferredScrollableViewportSize(new Dimension(600, booksTable.getPreferredSize().height));
+			booksTable.setFillsViewportHeight(true);
+			JScrollPane scroll = new JScrollPane(booksTable);
 			
-			booksPanel.add(bookTitleLabel);
-			booksPanel.add(bookCallNumberLabel);
-			booksPanel.add(bookInLabel);
-			booksPanel.add(bookOutLabel);
-			booksPanel.add(bookOnHoldLabel);
-			
-			for (String[] row : result) {
-				for (String col : row) {
-					booksPanel.add(new JLabel(col));
-				}
-			}
-			
+			booksFrame.add(scroll);
 			booksFrame.pack();
 			
 			// center the frame
