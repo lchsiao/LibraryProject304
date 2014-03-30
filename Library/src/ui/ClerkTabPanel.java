@@ -190,14 +190,15 @@ public class ClerkTabPanel extends UserTabPanel {
 	private void createOverdueItemsPanel() {
 		
 		JPanel wrapperPanel = new JPanel();
-		JScrollPane checkOverdueItemsScrollPane = new JScrollPane();
+		//JScrollPane checkOverdueItemsScrollPane = new JScrollPane();
 		checkOverdueItemsPanel = new JPanel(new GridLayout(0, 3, 10, 10));
 		checkOverdueItemsPanel.setBorder(new EmptyBorder(10, 10, 10, 10));
 		
 		itemCallNumberLabel = new JLabel("Call Number");
 		borrowerIDLabel = new JLabel("Borrower ID");
-		
-		wrapperPanel.add(checkOverdueItemsScrollPane);
+	
+		//checkOverdueItemsScrollPane.add(checkOverdueItemsPanel);
+		wrapperPanel.add(checkOverdueItemsPanel);
 		
 		this.addCard("Check Overdue Items", wrapperPanel);
 		
