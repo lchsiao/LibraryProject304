@@ -519,7 +519,31 @@ public class LibrarySQLUtil {
 	public static String addBook(String callNumber, String isbn, String title,
                                  String author, String publisher, String publishedYear) {
 		// TODO Auto-generated method stub
-		return null;
+		try {
+			PreparedStatement ps = conn.prepareStatement("INSERT INTO book VALUES (?,?,?,?,?,?)");
+			
+			ps.setString(1, callNumber);
+			ps.setString(2, isbn);
+			ps.setString(3, title);
+			ps.setString(4, author);
+			ps.setString(5, publisher);
+			ps.setInt(6, Integer.parseInt(publishedYear));
+			ps.execute();
+		    conn.commit();
+			ps.close();
+		} catch (SQLException e) {
+			try {
+				System.out.println("SQLException: " + e.getMessage());
+				conn.rollback();
+			} catch (SQLException e1) {
+				System.out.println("SQLException on rollback: " + e1.getMessage());
+			}
+		}
+		return SUCCESS_STRING + "New book " +  "added.";
+		
+		
+		
+		
 	}
     
 	public static String generateBookReport(String subject) {
