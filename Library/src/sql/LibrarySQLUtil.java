@@ -347,10 +347,9 @@ public class LibrarySQLUtil {
 				return null;
 			borrowerType = r.getString(1);
 			
-			// REMEMBER!! also return the bookCopyNumber in the search query (ask Jimmy)
-			PreparedStatement ps = conn.prepareStatement("SELECT title,book.callNumber,copyNo,outDate"
-														 + " FROM book,borrowing "
-                                                         + " WHERE book.callNumber=borrowing.callNumber AND book.copyNo=borrowing.copyNo AND bid=? AND inDate IS NULL");
+			PreparedStatement ps = conn.prepareStatement("SELECT title,borrowing.callNumber,copyNo,outDate"
+														 + " FROM borrowing,book "
+                                                         + " WHERE book.callNumber=borrowing.callNumber AND bid=? AND inDate IS NULL");
 			PreparedStatement ps2 = conn.prepareStatement("SELECT amount,callNumber"
                                                           + " FROM fine,borrowing"
                                                           + " WHERE fine.borid=borrowing.borid AND bid=?");
