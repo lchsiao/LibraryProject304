@@ -16,7 +16,6 @@ import oracle.sql.DATE;
 public class LibrarySQLUtil {
     
 	// db fields
-	private static Date today;
 	private static final String CONNECT_URL = "jdbc:oracle:thin:@dbhost.ugrad.cs.ubc.ca:1522:ug";
 	private static final String USER = "ora_d5l8";
 	private static final String PASSWORD = "a52632056";
@@ -29,7 +28,6 @@ public class LibrarySQLUtil {
 	static {
 		loadDriver();
 		conn = getConnection();
-		today = new java.util.Date();
 	}
 	
 	private LibrarySQLUtil(){}
@@ -71,6 +69,7 @@ public class LibrarySQLUtil {
     
 	public static String addBorrower(String name, String password, String address, String phone, String email, String sinOrStdNo, String type) {
 		//TODO
+		Date today = new java.util.Date();
 		try {
 			PreparedStatement ps = conn.prepareStatement("INSERT INTO borrower (bid,bPass,bName,address,phone,emailAddress,sinOrStNo,expiryDate,bType) "
                                                          + "VALUES (seq_borrower.nextval,?,?,?,?,?,?,?,?)");
@@ -105,6 +104,7 @@ public class LibrarySQLUtil {
 		String result = new String();
 		ResultSet rs = null;
 	    String borrowerType;
+	    Date today = new java.util.Date();
 		try {
 			PreparedStatement p = conn.prepareStatement("SELECT bid,bType FROM borrower WHERE bid=?");
 			p.setString(1, bid);
@@ -236,6 +236,7 @@ public class LibrarySQLUtil {
 		int borID;
 		String bid, borrowerType;
 		Date borrowedDate, dueDate;
+		Date today = new java.util.Date();
 		try {
 			PreparedStatement ps = conn.prepareStatement("SELECT borid,bid,outDate FROM borrowing WHERE callNumber=? AND copyNo=?");
 			PreparedStatement ps2 = conn.prepareStatement("UPDATE borrowing SET inDate=? WHERE borid=?");
@@ -401,6 +402,7 @@ public class LibrarySQLUtil {
     
 	public static String holdRequest(String bid, String callNumber) {
 		// TODO Auto-generated method stub
+		Date today = new java.util.Date();
 		try {
 			PreparedStatement ps = conn.prepareStatement("SELECT * FROM bookCopy WHERE callNumber=? AND copyStatus='in'");
 			ps.setString(1, callNumber);
@@ -486,6 +488,7 @@ public class LibrarySQLUtil {
 		List<String[]> result = new ArrayList<String[]>();
 		String borrowerType, email, callNum, copyNum;
 		Date dueDate;
+		Date today = new java.util.Date();
 		try {
 			PreparedStatement ps = conn.prepareStatement("SELECT callNumber,copyNo,bType,emailAddress,outDate FROM borrowing,borrower WHERE borrowing.bid=borrower.bid AND inDate IS NULL");
 			ResultSet rs = ps.executeQuery();
