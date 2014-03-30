@@ -175,7 +175,6 @@ public class LibrarianTabPanel extends UserTabPanel {
 
 
 	private boolean addBook() {
-		// TODO Auto-generated method stub
 		
 		String callNumber = callNumberField.getText();
 		String isbn = isbnField.getText();
@@ -204,7 +203,6 @@ public class LibrarianTabPanel extends UserTabPanel {
 
 
 	private void generateBookReport() {
-		// TODO Auto-generated method stub
 		
 		String subject = subjectField.getText();
 		
@@ -219,7 +217,6 @@ public class LibrarianTabPanel extends UserTabPanel {
 
 
 	private void listMostPopularItems() {
-		// TODO Auto-generated method stub
 		
 		String year = yearField.getText();
 		String n = nField.getText();
