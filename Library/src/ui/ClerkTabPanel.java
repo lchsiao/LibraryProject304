@@ -260,7 +260,7 @@ public class ClerkTabPanel extends UserTabPanel {
 	private void removeItem(int buttonPosition) {
 		
 		int rowStartPosition = buttonPosition - 2;
-		int listPosition = buttonPosition/3 - 2;
+		int listPosition = buttonPosition/3 - 1;
 		
 		itemsField.remove(listPosition);
 		

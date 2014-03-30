@@ -102,11 +102,12 @@ public class LibrarySQLUtil {
     
 	public static String checkOutItems(String bid, List<String> items) {
 		//TODO
-		String result = new String();
+		String result = "";
 		ResultSet rs = null;
 	    String borrowerType;
 		try {
 			PreparedStatement p = conn.prepareStatement("SELECT bid,bType FROM borrower WHERE bid=?");
+			p.setString(1, bid);
 			ResultSet temp = p.executeQuery();
 			if (temp.next() == false) {
 				return "Borrower ID not found.";
@@ -119,15 +120,20 @@ public class LibrarySQLUtil {
 		}
 		
 		try {
-			PreparedStatement ps = conn.prepareStatement("SELECT callNumber,copyNo,title FROM bookCopy,book WHERE bookCopy.callNumber = book.callNumber AND callNumber=? AND copyStatus='in'");
-			PreparedStatement ps2 = conn.prepareStatement("UPDATE bookCopy SET copyStatus='in' WHERE callNumber=? AND copyNo=?");
-			PreparedStatement ps3 = conn.prepareStatement("INSERT INTO borrowing (borid,bid,callNumber,copyNo,outDate,inDate) VALUES (seq_borrowing.nextval,?,?,?,?,?)");
+			PreparedStatement ps = conn.prepareStatement("SELECT book.callNumber,copyNo,title" 
+														+ " FROM bookCopy,book" 
+														+ " WHERE bookCopy.callNumber = book.callNumber AND book.callNumber=? AND copyStatus='in'");
+			PreparedStatement ps2 = conn.prepareStatement("UPDATE bookCopy" 
+														+ " SET copyStatus='out'" 
+														+ " WHERE callNumber=? AND copyNo=?");
+			PreparedStatement ps3 = conn.prepareStatement("INSERT INTO borrowing (borid,bid,callNumber,copyNo,outDate,inDate)" 
+														+ " VALUES (seq_borrowing.nextval,?,?,?,?,?)");
 			
 			for (int i = 0; i < items.size(); i++) {
 				ps.setString(1,items.get(i));
 				rs = ps.executeQuery();
 				if (rs.next()) {
-					ps2.setString(3, rs.getString(1));
+					ps2.setString(1, rs.getString(1));
 					ps2.setInt(2, rs.getInt(2));
 					ps2.executeUpdate();
 					
@@ -138,7 +144,7 @@ public class LibrarySQLUtil {
 					ps3.setDate(5, null);
 					ps3.executeUpdate();
 					
-					result.concat("Successfully checked out " + rs.getString(3) + ". Due on " + getDueDate(today, borrowerType) + "\r\n");
+					result = SUCCESS_STRING + "Checked out " + rs.getString(3) + ". Due on " + getDueDate(today, borrowerType) + "\r\n";
 				}
 			}
 			conn.commit();
@@ -148,7 +154,7 @@ public class LibrarySQLUtil {
 			ps2.close();
 			ps3.close();
 		} catch (SQLException e) {
-			System.out.println("SQLException: " + e.getMessage());
+			result = "SQLException: " + e.getMessage();
 			try {
 				conn.rollback();
 			} catch (SQLException e1) {
@@ -317,12 +323,12 @@ public class LibrarySQLUtil {
 	
 	private static Date getDueDate(Date borrowDate, String borrowerType) {
 		Date dueDate;
-		if (borrowerType.equals("student")) {
+		if (borrowerType.equals("Student")) {
 			dueDate = new Date(borrowDate.getTime() + 1209600000);
 		} else {
 			Calendar cal = Calendar.getInstance();
 			cal.setTime(borrowDate);
-			if (borrowerType.equals("staff")) {
+			if (borrowerType.equals("Staff")) {
 				cal.set(Calendar.WEEK_OF_YEAR, cal.get(Calendar.WEEK_OF_YEAR) + 6);
 				dueDate = cal.getTime();
 			} else {
