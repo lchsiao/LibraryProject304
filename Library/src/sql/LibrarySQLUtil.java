@@ -64,7 +64,7 @@ public class LibrarySQLUtil {
 	}
     
 	public static String addBorrower(String name, String password, String address, String phone, String email, String sinOrStdNo, String type) {
-        
+
 		Date today = new java.util.Date();
 		try {
 			PreparedStatement ps = conn.prepareStatement("INSERT INTO borrower (bid,bPass,bName,address,phone,emailAddress,sinOrStNo,expiryDate,bType) "
@@ -213,7 +213,7 @@ public class LibrarySQLUtil {
                     if (tempStatus.equals("out")) {
                         numOut = rs2.getInt(2);
                     }
-                    if (tempStatus.equals("on hold")) {
+                    if (tempStatus.equals("on-hold")) {
                         numOnHold = rs2.getInt(2);
                     }
                 }
@@ -245,11 +245,12 @@ public class LibrarySQLUtil {
 			PreparedStatement ps = conn.prepareStatement("SELECT borid,bid,outDate FROM borrowing WHERE callNumber=? AND copyNo=?");
 			PreparedStatement ps2 = conn.prepareStatement("UPDATE borrowing SET inDate=? WHERE borid=?");
 			PreparedStatement ps3 = conn.prepareStatement("SELECT bid FROM holdRequest WHERE callNumber=?");
-			PreparedStatement ps4 = conn.prepareStatement("UPDATE bookCopy SET status='in' WHERE callNumber=? AND copyNo=?");
-			PreparedStatement ps5 = conn.prepareStatement("UPDATE bookCopy SET status='on hold' WHERE callNumber=? AND copyNo=?");
+			PreparedStatement ps4 = conn.prepareStatement("UPDATE bookCopy SET copyStatus='in' WHERE callNumber=? AND copyNo=?");
+			PreparedStatement ps5 = conn.prepareStatement("UPDATE bookCopy SET copyStatus='on-hold' WHERE callNumber=? AND copyNo=?");
 			PreparedStatement ps7 = conn.prepareStatement("SELECT bType FROM borrower WHERE bid=?");
 			PreparedStatement ps8 = conn.prepareStatement("INSERT INTO fine (fid,amount,issuedDate,paidDate,borid)"
                                                           + "VALUES (seq_fine.nextval,?,?,?,?)");
+			PreparedStatement ps9 = conn.prepareStatement("Select title FROM book WHERE callNumber=?");
 			
 			// look for the borrowing record
 			ps.setString(1, callNum);
@@ -267,17 +268,17 @@ public class LibrarySQLUtil {
 			ps7.setString(1, bid);
 			ResultSet rs7 = ps7.executeQuery();
 			rs7.next();
-			ps7.close();
 			borrowerType = rs7.getString(1);
 			rs7.close();
+			ps7.close();
 			dueDate = getDueDate(borrowedDate, borrowerType);
 			if (today.after(dueDate)) {
 				// assess the fine if overdue
 				int fine = (int) ((Math.round((float)((today.getTime() - dueDate.getTime())/86400000))) * 1);
-				ps8.setInt(2, fine);
-				ps8.setDate(3, new java.sql.Date(today.getTime()));
-				ps8.setDate(4, null);
-				ps8.setInt(5, borID);
+				ps8.setInt(1, fine);
+				ps8.setDate(2, new java.sql.Date(today.getTime()));
+				ps8.setDate(3, null);
+				ps8.setInt(4, borID);
 				ps8.executeUpdate();
 				ps8.close();
 			}
@@ -286,27 +287,41 @@ public class LibrarySQLUtil {
 			ps2.setInt(2, borID);
 			ps2.executeUpdate();
 			ps2.close();
-			// get the borrower ID of a borrower who put the book on hold
+			// get the borrower ID of a borrower who put the book on-hold
 			ps3.setString(1, callNum);
 			ResultSet rs3 = ps3.executeQuery();
-			ps3.close();
 			if (rs3.next()) {
 				// get the name and address of this borrower
 				PreparedStatement ps6 = conn.prepareStatement("SELECT bName,emailAddress FROM borrower WHERE bid=?");
 				ps6.setString(1, rs3.getString(1));
 				ResultSet rs6 = ps6.executeQuery();
-				ps6.close();
-				rs3.close();
+				
 				if (rs6.next()) {
 					String name = rs6.getString(1);
 					String email = rs6.getString(2);
+					
 					rs6.close();
+					ps6.close();
+					
 					ps5.setString(1, callNum);
 					ps5.setInt(2, copyNum);
 					ps5.executeUpdate();
 					ps5.close();
 					conn.commit();
-					return "Successfully returned. Notify " + name + " at " + email + " that his/her held book is available";
+					
+					ps9.setString(1, callNum);
+					ResultSet rs9 = ps9.executeQuery();
+					String bookTitle = "";
+					if (rs9.next()) {
+						bookTitle = rs9.getString(1);
+					}
+					rs9.close();
+					ps9.close();
+					
+					StringBuilder result = new StringBuilder(SUCCESS_STRING);
+					result.append(" ").append(name).append(" notified by email at ").append(email)
+						.append(" for ").append(bookTitle).append("(").append(callNum).append(")");
+					return result.toString();
 				}
 			} else {
 				ps4.setString(1, callNum);
@@ -314,10 +329,12 @@ public class LibrarySQLUtil {
 				ps4.executeUpdate();
 				ps4.close();
 			}
+			rs3.close();
+			ps3.close();
 		} catch (SQLException e) {
-			return "Error.";
+			return e.getMessage();
 		}
-		return "Successfully returned.";
+		return SUCCESS_STRING;
 	}
     
 	public static List<List<String[]>> checkAcct(String bid) {
@@ -402,14 +419,14 @@ public class LibrarySQLUtil {
 			int tempCopyNo;
 			PreparedStatement ps2 = conn.prepareStatement("SELECT copyNo FROM bookCopy WHERE callNumber=? and copyStatus='out'");
 			PreparedStatement ps3 = conn.prepareStatement("INSERT INTO holdRequest (hid,bid,callNumber,issuedDate) VALUES (seq_holdRequest.nextval,?,?,?)");
-			PreparedStatement ps4 = conn.prepareStatement("UPDATE bookCopy SET copyStatus='on hold' WHERE callNumber=? AND copyNo=?");
+			PreparedStatement ps4 = conn.prepareStatement("UPDATE bookCopy SET copyStatus='on-hold' WHERE callNumber=? AND copyNo=?");
 			
 			ps2.setString(1, callNumber);
 			ResultSet rs2 = ps2.executeQuery();
 			if (!rs2.next()) {
 				rs2.close();
 				ps2.close();
-				return "Hold request failed. All copies of this item are on hold.";
+				return "Hold request failed. All copies of this item are on-hold.";
 			}
 			tempCopyNo = rs2.getInt(1);
 			rs2.close();
@@ -600,12 +617,12 @@ public class LibrarySQLUtil {
     
 	private static Date getDueDate(Date borrowDate, String borrowerType) {
 		Date dueDate;
-		if (borrowerType.equals("student")) {
+		if (borrowerType.equals("Student")) {
 			dueDate = new Date(borrowDate.getTime() + 1209600000);
 		} else {
 			Calendar cal = Calendar.getInstance();
 			cal.setTime(borrowDate);
-			if (borrowerType.equals("staff")) {
+			if (borrowerType.equals("Staff")) {
 				cal.set(Calendar.WEEK_OF_YEAR, cal.get(Calendar.WEEK_OF_YEAR) + 6);
 				dueDate = cal.getTime();
 			} else {
