@@ -679,6 +679,10 @@ public class LibrarySQLUtil {
 		}
 		return result;
 	}
+	
+	public static String pickUpHeldItems(String bid, List<String> items) {
+		return "";
+	}
     
 	private static Date getDueDate(Date borrowDate, String borrowerType) {
 		Date dueDate;
