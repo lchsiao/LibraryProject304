@@ -160,7 +160,6 @@ public class LibrarySQLUtil {
 		String tempCallNumber, tempTitle, tempStatus;
 		int numIn, numOut, numOnHold;
 		List<String[]> result = new ArrayList<String[]>();
-		ResultSet rs = null, rs2 = null, rs3 = null, rs4 = null;
 		try {
 			PreparedStatement ps = conn.prepareStatement("SELECT book.callNumber,title "
                                                          + "FROM book,hasAuthor,hasSubject "
@@ -174,7 +173,7 @@ public class LibrarySQLUtil {
 			ps.setString(1, "%" + title + "%");
 			ps.setString(2, author);
 			ps.setString(3, subject);
-			rs = ps.executeQuery();
+			ResultSet rs = ps.executeQuery(), rs2 = null;
 			
 			while (rs.next()) {
                 numIn = 0;
@@ -199,10 +198,8 @@ public class LibrarySQLUtil {
                 String[] array = {tempTitle, tempCallNumber, Integer.toString(numIn), Integer.toString(numOut), Integer.toString(numOnHold)};
                 result.add(array);
 			}
-			
 			ps.close();
-			if (rs != null)
-				rs.close();
+		    rs.close();
 			ps2.close();
 			if (rs2 != null)
 				rs2.close();
@@ -303,24 +300,6 @@ public class LibrarySQLUtil {
 			return "Error.";
 		}
 		return "Successfully returned.";
-	}
-	
-	private static Date getDueDate(Date borrowDate, String borrowerType) {
-		Date dueDate;
-		if (borrowerType.equals("student")) {
-			dueDate = new Date(borrowDate.getTime() + 1209600000);
-		} else {
-			Calendar cal = Calendar.getInstance();
-			cal.setTime(borrowDate);
-			if (borrowerType.equals("staff")) {
-				cal.set(Calendar.WEEK_OF_YEAR, cal.get(Calendar.WEEK_OF_YEAR) + 6);
-				dueDate = cal.getTime();
-			} else {
-				cal.set(Calendar.WEEK_OF_YEAR, cal.get(Calendar.WEEK_OF_YEAR) + 12);
-				dueDate = cal.getTime();
-			}
-		}
-		return dueDate;
 	}
     
 	public static List<List<String[]>> checkAcct(String bid) {
@@ -502,31 +481,6 @@ public class LibrarySQLUtil {
 		
 		return result;
 	}
-    
-	public static String getOverdueEmail(String bid) {
-		
-		String email = "";
-		try {
-			PreparedStatement ps = conn.prepareStatement("SELECT emailAddress FROM borrower WHERE bid=?");
-			ps.setString(1, bid);
-			ResultSet rs = ps.executeQuery();
-			
-			if (!rs.next()) {
-				rs.close();
-				ps.close();
-			}
-			
-			email = rs.getString(1);
-			rs.close();
-			ps.close();
-            
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
-		
-		return email;
-	}
-    
 	
 	public static String addBook(String callNumber, String isbn, String title,
                                  String author, String publisher, String publishedYear) {
@@ -577,7 +531,7 @@ public class LibrarySQLUtil {
 				ps = conn.prepareStatement("SELECT book.callNumber,copyNumber,title,outDate,bType FROM book,borrowing,borrower,hasSubject "
                                            + "WHERE borrowing.callNumber=book.callNumber AND borrower.bid=borrowing.bid AND inDate IS NULL AND bookSubject=? AND hasSubject.callNumber=borrowing.callNumber ORDER BY callNumber");
 			    ps.setString(1, subject);
-
+                
 			}
 			ResultSet rs = ps.executeQuery();
      		while (rs.next()) {
@@ -586,7 +540,7 @@ public class LibrarySQLUtil {
 				title = rs.getString(3);
 				outDate = rs.getDate(4);
 				checkOut = "" + outDate + "";
-//				checkOut = checkOut.substring(0, 16).concat(checkOut.substring(24, 28));
+                //				checkOut = checkOut.substring(0, 16).concat(checkOut.substring(24, 28));
 				borrowerType = rs.getString(5);
 				dateDue = getDueDate(outDate, borrowerType);
 				dueDate = "" + dateDue + "";
@@ -600,9 +554,7 @@ public class LibrarySQLUtil {
 			e.printStackTrace();
 		}
 		
-		
 		return result;
-		
 	}
     
 	public static List<String[]> listMostPopularItems(String year, int n) {
@@ -612,10 +564,10 @@ public class LibrarySQLUtil {
 		List<String[]> result = new ArrayList<String[]>();
 		try {
 			PreparedStatement ps = conn.prepareStatement("SELECT title, mainAuthor, borrowing.callNumber, COUNT(*) AS scount"
-														+ " FROM borrowing, book"
-                                                        + " WHERE borrowing.callNumber=book.callNumber AND TO_CHAR(outDate, 'mm/dd/yyyy') LIKE ?"
-														+ " GROUP BY title, mainAuthor, borrowing.callNumber"
-														+ " ORDER BY scount");
+                                                         + " FROM borrowing, book"
+                                                         + " WHERE borrowing.callNumber=book.callNumber AND TO_CHAR(outDate, 'mm/dd/yyyy') LIKE ?"
+                                                         + " GROUP BY title, mainAuthor, borrowing.callNumber"
+                                                         + " ORDER BY scount");
 			ps.setString(1, "%" + year + "%");
 			ResultSet rs = ps.executeQuery();
 			while (rs.next() && i < n) {
@@ -632,5 +584,23 @@ public class LibrarySQLUtil {
 			e.printStackTrace();
 		}
 		return result;
+	}
+    
+	private static Date getDueDate(Date borrowDate, String borrowerType) {
+		Date dueDate;
+		if (borrowerType.equals("student")) {
+			dueDate = new Date(borrowDate.getTime() + 1209600000);
+		} else {
+			Calendar cal = Calendar.getInstance();
+			cal.setTime(borrowDate);
+			if (borrowerType.equals("staff")) {
+				cal.set(Calendar.WEEK_OF_YEAR, cal.get(Calendar.WEEK_OF_YEAR) + 6);
+				dueDate = cal.getTime();
+			} else {
+				cal.set(Calendar.WEEK_OF_YEAR, cal.get(Calendar.WEEK_OF_YEAR) + 12);
+				dueDate = cal.getTime();
+			}
+		}
+		return dueDate;
 	}
 }
