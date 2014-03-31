@@ -132,7 +132,7 @@ public class BorrowerTabPanel extends UserTabPanel {
 		
 		borrowedItemsFrame = new JFrame("Borrowed Items");
 		finesFrame = new JFrame("Fines");
-		heldItemsFrame = new JFrame("Held Fines");
+		heldItemsFrame = new JFrame("Hold Request Items");
 
 		this.addCard("Check Account", createCheckAccountPanel);
 	}

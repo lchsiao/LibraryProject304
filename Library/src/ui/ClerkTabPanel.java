@@ -4,6 +4,8 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -194,6 +196,15 @@ public class ClerkTabPanel extends UserTabPanel {
 		
 		checkOverdueItemsPanel = new JPanel(new BorderLayout());
 		checkOverdueItemsPanel.setBorder(new EmptyBorder(10, 10, 10, 10));
+		
+		comboBox.addItemListener(new ItemListener() {
+			
+			@Override
+			public void itemStateChanged(ItemEvent e) {
+				if (((String) e.getItem()).equals("Check Overdue Items"))
+					updateOverdueItems();
+			}
+		});
 		
 		updateOverdueItems();
 		
