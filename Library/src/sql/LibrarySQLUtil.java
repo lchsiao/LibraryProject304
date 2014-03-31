@@ -157,7 +157,7 @@ public class LibrarySQLUtil {
 	}
     
 	public static List<String[]> searchBooks(String title, String author, String subject) {
-		String tempCallNumber, tempTitle;
+		String tempCallNumber, tempTitle, tempStatus;
 		int numIn, numOut, numOnHold;
 		List<String[]> result = new ArrayList<String[]>();
 		ResultSet rs = null, rs2 = null, rs3 = null, rs4 = null;
@@ -166,40 +166,37 @@ public class LibrarySQLUtil {
                                                          + "FROM book,hasAuthor,hasSubject "
                                                          + "WHERE book.callNumber=hasAuthor.callNumber AND book.callNumber=hasSubject.callNumber "
                                                          + "AND (title LIKE ? OR aName=? OR bookSubject=?)");
-			PreparedStatement ps2 = conn.prepareStatement("SELECT COUNT (*) "
+			PreparedStatement ps2 = conn.prepareStatement("SELECT copyStatus,COUNT(*) "
                                                           + "FROM bookCopy,book "
-                                                          + "WHERE bookCopy.callNumber=book.callNumber AND book.callNumber=? AND copyStatus='in'");
-			PreparedStatement ps3 = conn.prepareStatement("SELECT COUNT (*) "
-                                                          + "FROM bookCopy,book "
-                                                          + "WHERE bookCopy.callNumber=book.callNumber AND book.callNumber=? AND copyStatus='out'");
-			PreparedStatement ps4 = conn.prepareStatement("SELECT COUNT (*) "
-                                                          + "FROM bookCopy,book "
-                                                          + "WHERE bookCopy.callNumber=book.callNumber AND book.callNumber=? AND copyStatus='on hold'");
+                                                          + "WHERE bookCopy.callNumber=book.callNumber AND book.callNumber=? GROUP BY copyStatus ORDER BY copyStatus");
+			
 			ps.setString(1, "%" + title + "%");
 			ps.setString(2, author);
 			ps.setString(3, subject);
 			rs = ps.executeQuery();
 			
 			while (rs.next()) {
+                numIn = 0;
+                numOut = 0;
+                numOnHold = 0;
 				tempCallNumber = rs.getString(1);
 				tempTitle = rs.getString(2);
 				ps2.setString(1, tempCallNumber);
 				rs2 = ps2.executeQuery();
-				if (rs2.next())
-					numIn = rs2.getInt(1);
-				else numIn = 0;
-				ps3.setString(1, tempCallNumber);
-				rs3 = ps3.executeQuery();
-				if (rs3.next())
-					numOut = rs3.getInt(1);
-				else numOut = 0;
-				ps4.setString(1, tempCallNumber);
-				rs4 = ps4.executeQuery();
-				if (rs4.next())
-					numOnHold = rs4.getInt(1);
-				else numOnHold = 0;
-				String[] array = {tempTitle, tempCallNumber, Integer.toString(numIn), Integer.toString(numOut), Integer.toString(numOnHold)};
-				result.add(array);
+				while (rs2.next()) {
+                    tempStatus = rs2.getString(1);
+                    if (tempStatus.equals("in")) {
+                        numIn = rs.getInt(2);
+                    }
+                    if (tempStatus.equals("out")) {
+                        numOut = rs.getInt(2);
+                    }
+                    if (tempStatus.equals("on hold")) {
+                        numOnHold = rs.getInt(2);
+                    }
+                }
+                String[] array = {tempTitle, tempCallNumber, Integer.toString(numIn), Integer.toString(numOut), Integer.toString(numOnHold)};
+                result.add(array);
 			}
 			
 			ps.close();
