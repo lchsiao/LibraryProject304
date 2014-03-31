@@ -244,9 +244,10 @@ public class LibrarySQLUtil {
 		try {
 			PreparedStatement ps = conn.prepareStatement("SELECT borid,bid,outDate FROM borrowing WHERE callNumber=? AND copyNo=?");
 			PreparedStatement ps2 = conn.prepareStatement("UPDATE borrowing SET inDate=? WHERE borid=?");
-			PreparedStatement ps3 = conn.prepareStatement("SELECT bid FROM holdRequest WHERE callNumber=?");
+			PreparedStatement ps3 = conn.prepareStatement("SELECT bid FROM holdRequest WHERE callNumber=? AND flag='false'");
 			PreparedStatement ps4 = conn.prepareStatement("UPDATE bookCopy SET copyStatus='in' WHERE callNumber=? AND copyNo=?");
 			PreparedStatement ps5 = conn.prepareStatement("UPDATE bookCopy SET copyStatus='on-hold' WHERE callNumber=? AND copyNo=?");
+			PreparedStatement ps5a = conn.prepareStatement("UPDATE holdRequest SET flag='true' WHERE hid=(SELECT MIN(hid) from holdRequest WHERE callNumber=? AND flag='false')");
 			PreparedStatement ps7 = conn.prepareStatement("SELECT bType FROM borrower WHERE bid=?");
 			PreparedStatement ps8 = conn.prepareStatement("INSERT INTO fine (fid,amount,issuedDate,paidDate,borid)"
                                                           + "VALUES (seq_fine.nextval,?,?,?,?)");
@@ -305,8 +306,11 @@ public class LibrarySQLUtil {
 					
 					ps5.setString(1, callNum);
 					ps5.setInt(2, copyNum);
+					ps5a.setString(1, callNum);
 					ps5.executeUpdate();
+					ps5a.executeUpdate();	
 					ps5.close();
+					ps5a.close();
 					conn.commit();
 					
 					ps9.setString(1, callNum);
@@ -419,7 +423,7 @@ public class LibrarySQLUtil {
 			
 			int tempCopyNo;
 			PreparedStatement ps2 = conn.prepareStatement("SELECT copyNo FROM bookCopy WHERE callNumber=? and copyStatus='out'");
-			PreparedStatement ps3 = conn.prepareStatement("INSERT INTO holdRequest (hid,bid,callNumber,issuedDate) VALUES (seq_holdRequest.nextval,?,?,?)");
+			PreparedStatement ps3 = conn.prepareStatement("INSERT INTO holdRequest (hid,bid,callNumber,issuedDate,flag) VALUES (seq_holdRequest.nextval,?,?,?,?)");
 			PreparedStatement ps4 = conn.prepareStatement("UPDATE bookCopy SET copyStatus='on-hold' WHERE callNumber=? AND copyNo=?");
 			
 			ps2.setString(1, callNumber);
@@ -436,6 +440,7 @@ public class LibrarySQLUtil {
 			ps3.setString(1, bid);
 			ps3.setString(2, callNumber);
 			ps3.setDate(3, new java.sql.Date(today.getTime()));
+			ps3.setString(4, "false");
 			ps3.executeUpdate();
 			ps3.close();
 			
