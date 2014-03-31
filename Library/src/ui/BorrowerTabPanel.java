@@ -30,7 +30,7 @@ public class BorrowerTabPanel extends UserTabPanel {
 	// createCheckAccount fields
 	private static final String CHECK_ACCT_ACTION = "CHECKACCT";
 	private static final String[] HEADER_BORROWED_ITEMS = new String[] { "Call Number", "Title", "Copy No.", "Due Date"};
-	private static final String[] HEADER_FINES = new String[] {"Call Number", "Fine Amount"};
+	private static final String[] HEADER_FINES = new String[] {"Call Number", "Title", "Fine Amount"};
 	private static final String[] HEADER_HELD_ITEMS = new String[] {"Call Number", "Title"}; 
 	
 	private JFrame borrowedItemsFrame;

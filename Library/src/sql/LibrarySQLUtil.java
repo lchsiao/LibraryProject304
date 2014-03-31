@@ -353,9 +353,9 @@ public class LibrarySQLUtil {
 			PreparedStatement ps = conn.prepareStatement("SELECT title,borrowing.callNumber,copyNo,outDate"
 														 + " FROM borrowing,book "
                                                          + " WHERE book.callNumber=borrowing.callNumber AND bid=? AND inDate IS NULL");
-			PreparedStatement ps2 = conn.prepareStatement("SELECT amount,callNumber"
-                                                          + " FROM fine,borrowing"
-                                                          + " WHERE fine.borid=borrowing.borid AND bid=?");
+			PreparedStatement ps2 = conn.prepareStatement("SELECT amount,borrowing.callNumber,title"
+                                                          + " FROM fine,borrowing,book"
+                                                          + " WHERE fine.borid=borrowing.borid AND borrowing.callNumber=book.callNumber AND bid=?");
 			PreparedStatement ps3 = conn.prepareStatement("SELECT book.callNumber,title"
                                                           + " FROM holdRequest,book"
                                                           + " WHERE holdRequest.callNumber = book.callNumber AND bid=?");
@@ -377,7 +377,8 @@ public class LibrarySQLUtil {
 			while (rs2.next()) {
 				fineAmount = "$" + Integer.toString(rs2.getInt(1)) + ".00";
 				callNum = rs2.getString(2);
-				String[] fine = {callNum, fineAmount};
+				title = rs2.getString(3);
+				String[] fine = {callNum, title, fineAmount};
 				fines.add(fine);
 			}
 			rs2.close();
