@@ -100,8 +100,8 @@ public class ClerkTabPanel extends UserTabPanel {
 
 		JLabel phoneLabel = new JLabel("Phone:");
 		NumberFormat format = NumberFormat.getIntegerInstance();
-		format.setMinimumIntegerDigits(9);
-		format.setMaximumIntegerDigits(9);
+		format.setMinimumIntegerDigits(10);
+		format.setMaximumIntegerDigits(10);
 		format.setGroupingUsed(false);
 		phoneField = new JFormattedTextField(format);
 		addBorrowerPanelTop.add(phoneLabel);
@@ -354,7 +354,10 @@ public class ClerkTabPanel extends UserTabPanel {
 		}
 
 		String result = LibrarySQLUtil.processReturn(returnID, Integer.parseInt(copyNumber));
-		if (result.contains(LibrarySQLUtil.SUCCESS_STRING)) {
+		if (result.equals(LibrarySQLUtil.SUCCESS_STRING)) {
+			JOptionPane.showMessageDialog(this, result);
+		}
+		else if (result.contains(LibrarySQLUtil.SUCCESS_STRING)) {
 			
 			String bookString = result.substring(result.indexOf(" for ") + 5);
 			String[] words = result.split(" ");
