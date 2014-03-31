@@ -64,14 +64,19 @@ public abstract class UserTabPanel extends JPanel implements ActionListener {
 		if (data.length != 0) {
 			Dimension d = this.getToolkit().getScreenSize();
 
-			//frame.removeAll();
-
-			JTable table = new JTable(data, header);
+			JTable table = new JTable(data, header) {
+				
+				@Override
+				public boolean isCellEditable(int row, int column) {
+					return false;
+				}
+			};
+			
 			table.setPreferredScrollableViewportSize(new Dimension(600, Math.min(table.getPreferredSize().height, d.height)));
 			table.setFillsViewportHeight(true);
 
 			JScrollPane scroll = new JScrollPane(table);
-
+			
 			frame.add(scroll);
 			frame.pack();
 
@@ -79,6 +84,7 @@ public abstract class UserTabPanel extends JPanel implements ActionListener {
 			Rectangle r = frame.getBounds();
 			frame.setLocation( (d.width - r.width)/2, (d.height - r.height)/2 );
 
+			frame.validate();
 			frame.setVisible(true);
 		} else {
 			JOptionPane.showMessageDialog(this, "No results found");
