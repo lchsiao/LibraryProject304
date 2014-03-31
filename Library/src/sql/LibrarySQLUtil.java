@@ -265,7 +265,7 @@ public class LibrarySQLUtil {
 			dueDate = getDueDate(borrowedDate, borrowerType);
 			if (today.after(dueDate)) {
 				// assess the fine if overdue
-				int fine = (int) ((Math.round((float)(today.getTime() - dueDate.getTime()))) * 0.05);
+				int fine = (int) ((Math.round((float)((today.getTime() - dueDate.getTime())/86400000))) * 0.05);
 				ps8.setInt(2, fine);
 				ps8.setDate(3, new java.sql.Date(today.getTime()));
 				ps8.setDate(4, null);
@@ -580,10 +580,11 @@ public class LibrarySQLUtil {
 		try {
 			if (subject.isEmpty()) {
 			    ps = conn.prepareStatement("SELECT book.callNumber,copyNumber,title,outDate,bType FROM book,borrowing,borrower "
-                                           + "WHERE borrowing.callNumber=book.callNumber AND borrower.bid=borrowing.bid AND inDate IS NULL");
+                                           + "WHERE borrowing.callNumber=book.callNumber AND borrower.bid=borrowing.bid AND inDate IS NULL ORDER BY callNumber");
 			} else {
 				ps = conn.prepareStatement("SELECT book.callNumber,copyNumber,title,outDate,bType FROM book,borrowing,borrower,hasSubject "
-                                           + "WHERE borrowing.callNumber=book.callNumber AND borrower.bid=borrowing.bid AND inDate IS NULL AND bookSubject=? AND hasSubject.callNumber=borrowing.callNumber");
+                                           + "WHERE borrowing.callNumber=book.callNumber AND borrower.bid=borrowing.bid AND inDate IS NULL AND bookSubject=? AND hasSubject.callNumber=borrowing.callNumber ORDER BY callNumber");
+			    ps.setString(1, subject);
 			}
 			ResultSet rs = ps.executeQuery();
      		while (rs.next()) {
@@ -611,10 +612,29 @@ public class LibrarySQLUtil {
 		
 	}
     
-	
-	
-	public static String listMostPopularItems(String year, String n) {
+	public static List<String[]> listMostPopularItems(String year, int n) {
 		// TODO Auto-generated method stub
-		return null;
+		String title, author, callNum;
+		int count, i = 0;
+		List<String[]> result = new ArrayList<String[]>();
+		try {
+			PreparedStatement ps = conn.prepareStatement("SELECT title,mainAuthor,callNumber,COUNT(*) AS scount FROM borrowing,book "
+                                                         + "WHERE borrowing.callNumber = book.callNumber AND CAST(outDate AS VARCHAR(30)) LIKE ? GROUP BY borrowing.callNumber ORDER BY scount");
+			ps.setString(1, year);
+			ResultSet rs = ps.executeQuery();
+			while (rs.next() && i < n) {
+				title = rs.getString(1);
+				author = rs.getString(2);
+				callNum = rs.getString(3);
+				count = rs.getInt(4);
+				String[] item = {title, author, callNum, Integer.toString(count)};
+				i++;
+				result.add(item);
+			}
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return result;
 	}
 }
