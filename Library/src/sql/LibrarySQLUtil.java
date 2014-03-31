@@ -96,7 +96,7 @@ public class LibrarySQLUtil {
 		return SUCCESS_STRING + "New borrower " +  "added.";
     }
     
-    
+    // checks out the items provided by the list parameter 
 	public static String checkOutItems(String bid, List<String> items) {
         
 		String result = "";
@@ -199,6 +199,7 @@ public class LibrarySQLUtil {
 		return SUCCESS_STRING + "Here are the bookz you have checked out:\r\n" + result;
 	}
     
+	// find the books that match the title, author, and/or subject parameters
 	public static List<String[]> searchBooks(String title, String author, String subject) {
 		String tempCallNumber, tempTitle, tempStatus;
 		int numIn, numOut, numOnHold;
@@ -257,6 +258,7 @@ public class LibrarySQLUtil {
 		return result;
 	}
     
+	// return the book with callNumber and copyNo that matchs the callNum and copyNum parameters
 	public static String processReturn(String callNum, int copyNum) {
 		int borID;
 		String bid, borrowerType;
@@ -268,13 +270,12 @@ public class LibrarySQLUtil {
 			PreparedStatement ps3 = conn.prepareStatement("SELECT bid FROM holdRequest WHERE callNumber=? AND flag='false'");
 			PreparedStatement ps4 = conn.prepareStatement("UPDATE bookCopy SET copyStatus='in' WHERE callNumber=? AND copyNo=?");
 			PreparedStatement ps5 = conn.prepareStatement("UPDATE bookCopy SET copyStatus='on-hold' WHERE callNumber=? AND copyNo=?");
-			PreparedStatement ps5a = conn.prepareStatement("UPDATE holdRequest SET flag='true' WHERE hid=(SELECT MIN(hid) from holdRequest WHERE callNumber=? AND flag='false')");
+			PreparedStatement ps5a = conn.prepareStatement("UPDATE holdRequest C SET flag='true' WHERE C.hid=(SELECT MIN(H.hid) from holdRequest H WHERE callNumber=? AND flag='false'");
 			PreparedStatement ps7 = conn.prepareStatement("SELECT bType FROM borrower WHERE bid=?");
 			PreparedStatement ps8 = conn.prepareStatement("INSERT INTO fine (fid,amount,issuedDate,paidDate,borid)"
                                                           + "VALUES (seq_fine.nextval,?,?,?,?)");
 			PreparedStatement ps9 = conn.prepareStatement("Select title FROM book WHERE callNumber=?");
-			
-			// look for the borrowing record
+		
 			ps.setString(1, callNum);
 			ps.setInt(2, copyNum);
 			ResultSet rs = ps.executeQuery();
@@ -286,7 +287,7 @@ public class LibrarySQLUtil {
 			borrowedDate = rs.getDate(3);
 			ps.close();
 			rs.close();
-			// find the type of the borrower
+			
 			ps7.setString(1, bid);
 			ResultSet rs7 = ps7.executeQuery();
 			rs7.next();
@@ -304,16 +305,15 @@ public class LibrarySQLUtil {
 				ps8.executeUpdate();
 				ps8.close();
 			}
-			// set the date the book was returned in the borrowing record
+			
 			ps2.setDate(1, new java.sql.Date(today.getTime()));
 			ps2.setInt(2, borID);
 			ps2.executeUpdate();
 			ps2.close();
-			// get the borrower ID of a borrower who put the book on-hold
+			
 			ps3.setString(1, callNum);
 			ResultSet rs3 = ps3.executeQuery();
 			if (rs3.next()) {
-				// get the name and address of this borrower
 				PreparedStatement ps6 = conn.prepareStatement("SELECT bName,emailAddress FROM borrower WHERE bid=?");
 				ps6.setString(1, rs3.getString(1));
 				ResultSet rs6 = ps6.executeQuery();
@@ -362,6 +362,7 @@ public class LibrarySQLUtil {
 		return SUCCESS_STRING;
 	}
     
+	// display information of the borrower with this bid
 	public static List<List<String[]>> checkAcct(String bid) {
         
 		List<List<String[]>> result = new ArrayList<List<String[]>>();
@@ -427,6 +428,7 @@ public class LibrarySQLUtil {
 		return result;
 	}
     
+	// add a new hold request
 	public static String holdRequest(String bid, String callNumber) {
         
 		Date today = new java.util.Date();
@@ -476,9 +478,9 @@ public class LibrarySQLUtil {
 		return "Hold request for item " + callNumber + " was successful.";
 	}
     
+	// pay a fine that resulted from a particular borrowing instance
 	public static String payFines(int borid, int amount) {
-        
-		try {
+        try {
 			int moneyOwed;
 			PreparedStatement ps = conn.prepareStatement("SELECT amount FROM fine WHERE borid=?");
 			ps.setInt(1, borid);
@@ -509,6 +511,7 @@ public class LibrarySQLUtil {
 		return "Thank you for your payment. Please pay the remainder of the fine soon.";
 	}
 	
+	// display overdue items
 	public static List<String[]> getOverdueItems() {
         
 		List<String[]> result = new ArrayList<String[]>();
@@ -542,10 +545,10 @@ public class LibrarySQLUtil {
 		return result;
 	}
 	
+	// add a 
 	public static String addBook(String callNumber, String isbn, String title,
                                  String author, String authors, String subjects, String publisher, String publishedYear) {
-        
-		try {
+        try {
 			PreparedStatement ps = conn.prepareStatement("INSERT INTO book VALUES (?,?,?,?,?,?)");
 			
 			ps.setString(1, callNumber);
@@ -701,10 +704,6 @@ public class LibrarySQLUtil {
 			e.printStackTrace();
 		}
 		return result;
-	}
-	
-	public static String pickUpHeldItems(String bid, List<String> items) {
-		return "";
 	}
     
 	private static Date getDueDate(Date borrowDate, String borrowerType) {
