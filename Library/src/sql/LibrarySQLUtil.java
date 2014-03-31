@@ -74,7 +74,7 @@ public class LibrarySQLUtil {
 			ps.setString(3, address);
 			ps.setString(4, phone);
 			ps.setString(5, email);
-			ps.setInt(6, Integer.parseInt(sinOrStdNo));
+			ps.setString(6, sinOrStdNo);
 			Calendar cal = Calendar.getInstance();
 			cal.setTime(today);
 			cal.set(Calendar.YEAR, cal.get(Calendar.YEAR) + 1);
