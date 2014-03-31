@@ -97,7 +97,7 @@ public class LibrarySQLUtil {
     
 	public static String checkOutItems(String bid, List<String> items) {
         
-		String result = "";
+		String result = "Thank you for coming. Here are the bookz you have checked out: \r\n";
 		ResultSet rs = null;
 	    String borrowerType;
 	    Date today = new java.util.Date();
@@ -154,7 +154,7 @@ public class LibrarySQLUtil {
 					ps3.setDate(5, null);
 					ps3.executeUpdate();
 					
-					result = SUCCESS_STRING + " Successfully checked out " + rs.getString(3) + ". Due on " + getDueDate(today, borrowerType) + "\r\n";
+					result = result + "Successfully checked out " + rs.getString(3) + ". Due on " + getDueDate(today, borrowerType) + "\r\n";
 				}
 			}
 			conn.commit();
@@ -172,8 +172,8 @@ public class LibrarySQLUtil {
 			}
 		}
 		
-		if (result == "") {
-			result = "Error. Cannot check out this item because it is already out.";
+		if (result.equals("Thank you for coming. Here are the bookz you have checked out: \r\n")) {
+			result = "You did not check out any bookz today.";
 		}
 		return result;
 	}
