@@ -1,9 +1,11 @@
 package sql;
+import java.sql.Array;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -128,19 +130,30 @@ public class LibrarySQLUtil {
 			return e3.getMessage();
 		}
 		try {
-			PreparedStatement ps = conn.prepareStatement("SELECT book.callNumber,copyNo,title"
-														+ " FROM bookCopy,book"
-														+ " WHERE bookCopy.callNumber=book.callNumber AND book.callNumber=? AND copyStatus='in'");
+			PreparedStatement ps = conn.prepareStatement("SELECT c.callNumber,copyNo,title,hid FROM " +
+					"((SELECT a.callNumber, copyno, title FROM book a, bookcopy b WHERE a.callnumber=b.callNumber AND a.callnumber=?" +
+					" AND (copystatus='in' OR copystatus='on-hold') ORDER BY copystatus DESC) c LEFT JOIN holdrequest d ON c.callnumber=d.callnumber AND d.bid=?)");
 			PreparedStatement ps2 = conn.prepareStatement("UPDATE bookCopy"
 														+ " SET copyStatus='out'"
 														+ " WHERE callNumber=? AND copyNo=?");
 			PreparedStatement ps3 = conn.prepareStatement("INSERT INTO borrowing (borid,bid,callNumber,copyNo,outDate,inDate)"
 														+ " VALUES (seq_borrowing.nextval,?,?,?,?,?)");
+			PreparedStatement ps4 = conn.prepareStatement("DELETE FROM holdrequest WHERE hid=?");
+			
+			List<String> hidsToDelete = new ArrayList<String>();
 			
 			for (int i = 0; i < items.size(); i++) {
 				ps.setString(1,items.get(i));
+				ps.setString(2, bid);
 				rs = ps.executeQuery();
+				
 				if (rs.next()) {
+					
+					// check if on-hold
+					String hid = rs.getString(4);
+					if (hid != null && !hid.isEmpty())
+						hidsToDelete.add(hid);
+					
 					ps2.setString(1, rs.getString(1));
 					ps2.setInt(2, rs.getInt(2));
 					ps2.executeUpdate();
@@ -161,6 +174,16 @@ public class LibrarySQLUtil {
 			ps.close();
 			ps2.close();
 			ps3.close();
+			
+			// delete hold requests
+			for (String hid : hidsToDelete) {
+				ps4.setString(1, hid);
+				ps4.addBatch();
+			
+			}
+			ps4.executeBatch();
+			ps4.close();
+			
 		} catch (SQLException e) {
 			try {
 				conn.rollback();
