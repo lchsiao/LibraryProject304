@@ -157,7 +157,7 @@ public class LibrarySQLUtil {
 	}
     
 	public static List<String[]> searchBooks(String title, String author, String subject) {
-		String tempCallNumber, tempTitle;
+		String tempCallNumber, tempTitle, tempStatus;
 		int numIn, numOut, numOnHold;
 		List<String[]> result = new ArrayList<String[]>();
 		ResultSet rs = null, rs2 = null, rs3 = null, rs4 = null;
@@ -166,40 +166,37 @@ public class LibrarySQLUtil {
                                                          + "FROM book,hasAuthor,hasSubject "
                                                          + "WHERE book.callNumber=hasAuthor.callNumber AND book.callNumber=hasSubject.callNumber "
                                                          + "AND (title LIKE ? OR aName=? OR bookSubject=?)");
-			PreparedStatement ps2 = conn.prepareStatement("SELECT COUNT (*) "
+			PreparedStatement ps2 = conn.prepareStatement("SELECT copyStatus,COUNT(*) "
                                                           + "FROM bookCopy,book "
-                                                          + "WHERE bookCopy.callNumber=book.callNumber AND book.callNumber=? AND copyStatus='in'");
-			PreparedStatement ps3 = conn.prepareStatement("SELECT COUNT (*) "
-                                                          + "FROM bookCopy,book "
-                                                          + "WHERE bookCopy.callNumber=book.callNumber AND book.callNumber=? AND copyStatus='out'");
-			PreparedStatement ps4 = conn.prepareStatement("SELECT COUNT (*) "
-                                                          + "FROM bookCopy,book "
-                                                          + "WHERE bookCopy.callNumber=book.callNumber AND book.callNumber=? AND copyStatus='on hold'");
+                                                          + "WHERE bookCopy.callNumber=book.callNumber AND book.callNumber=? GROUP BY copyStatus ORDER BY copyStatus");
+			
 			ps.setString(1, "%" + title + "%");
 			ps.setString(2, author);
 			ps.setString(3, subject);
 			rs = ps.executeQuery();
 			
 			while (rs.next()) {
+                numIn = 0;
+                numOut = 0;
+                numOnHold = 0;
 				tempCallNumber = rs.getString(1);
 				tempTitle = rs.getString(2);
 				ps2.setString(1, tempCallNumber);
 				rs2 = ps2.executeQuery();
-				if (rs2.next())
-					numIn = rs2.getInt(1);
-				else numIn = 0;
-				ps3.setString(1, tempCallNumber);
-				rs3 = ps3.executeQuery();
-				if (rs3.next())
-					numOut = rs3.getInt(1);
-				else numOut = 0;
-				ps4.setString(1, tempCallNumber);
-				rs4 = ps4.executeQuery();
-				if (rs4.next())
-					numOnHold = rs4.getInt(1);
-				else numOnHold = 0;
-				String[] array = {tempTitle, tempCallNumber, Integer.toString(numIn), Integer.toString(numOut), Integer.toString(numOnHold)};
-				result.add(array);
+				while (rs2.next()) {
+                    tempStatus = rs2.getString(1);
+                    if (tempStatus.equals("in")) {
+                        numIn = rs.getInt(2);
+                    }
+                    if (tempStatus.equals("out")) {
+                        numOut = rs.getInt(2);
+                    }
+                    if (tempStatus.equals("on hold")) {
+                        numOnHold = rs.getInt(2);
+                    }
+                }
+                String[] array = {tempTitle, tempCallNumber, Integer.toString(numIn), Integer.toString(numOut), Integer.toString(numOnHold)};
+                result.add(array);
 			}
 			
 			ps.close();
@@ -265,7 +262,7 @@ public class LibrarySQLUtil {
 			dueDate = getDueDate(borrowedDate, borrowerType);
 			if (today.after(dueDate)) {
 				// assess the fine if overdue
-				int fine = (int) ((Math.round((float)(today.getTime() - dueDate.getTime()))) * 0.05);
+				int fine = (int) ((Math.round((float)((today.getTime() - dueDate.getTime())/86400000))) * 0.05);
 				ps8.setInt(2, fine);
 				ps8.setDate(3, new java.sql.Date(today.getTime()));
 				ps8.setDate(4, null);
@@ -486,7 +483,9 @@ public class LibrarySQLUtil {
 		Date dueDate;
 		Date today = new java.util.Date();
 		try {
-			PreparedStatement ps = conn.prepareStatement("SELECT callNumber,copyNo,bType,emailAddress,outDate FROM borrowing,borrower WHERE borrowing.bid=borrower.bid AND inDate IS NULL");
+			PreparedStatement ps = conn.prepareStatement("SELECT callNumber, copyNo, bType, emailAddress, outDate"
+                                                         + " FROM borrowing, borrower"
+                                                         + " WHERE borrowing.bid=borrower.bid AND inDate IS NULL");
 			ResultSet rs = ps.executeQuery();
 			while (rs.next()) {
 				borrowerType = rs.getString(3);
@@ -509,12 +508,31 @@ public class LibrarySQLUtil {
 		return result;
 	}
     
-	public static String getOverdueEmail(String callNumber, String borrowerid) {
-		return "email";
-		// TODO Auto-generated method stub
+	public static String getOverdueEmail(String bid) {
 		
+		String email = "";
+		try {
+			PreparedStatement ps = conn.prepareStatement("SELECT emailAddress FROM borrower WHERE bid=?");
+			ps.setString(1, bid);
+			ResultSet rs = ps.executeQuery();
+			
+			if (!rs.next()) {
+				rs.close();
+				ps.close();
+			}
+			
+			email = rs.getString(1);
+			rs.close();
+			ps.close();
+            
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		
+		return email;
 	}
     
+	
 	public static String addBook(String callNumber, String isbn, String title,
                                  String author, String publisher, String publishedYear) {
 		// TODO Auto-generated method stub
@@ -540,18 +558,84 @@ public class LibrarySQLUtil {
 		}
 		return SUCCESS_STRING + "New book " +  "added.";
 		
+	}
+    
+	/**
+	 * Generate a report with all the books that have been checked out.
+	 *
+	 * should return List<String[]>: Call Number, Copy Num, Title, CheckOut Date, Due Date, Overdue Y/N?
+	 * should be ordered by Call Number
+	 * if Subject field is not empty, generate checkOut books pertaining to the subject
+     **/
+	
+	public static List<String[]> generateBookReport(String subject) {
+		// TODO Auto-generated method stub
+		List<String[]> result = new ArrayList<String[]>();
+		Date outDate, dateDue, today = new java.util.Date();
+		String callNum, copyNum, title, checkOut, dueDate, overdue = "false", borrowerType;
+		PreparedStatement ps;
+		try {
+			if (subject.isEmpty()) {
+                ps = conn.prepareStatement("SELECT book.callNumber,copyNumber,title,outDate,bType FROM book,borrowing,borrower "
+                                           + "WHERE borrowing.callNumber=book.callNumber AND borrower.bid=borrowing.bid AND inDate IS NULL ORDER BY callNumber");
+			} else {
+				ps = conn.prepareStatement("SELECT book.callNumber,copyNumber,title,outDate,bType FROM book,borrowing,borrower,hasSubject "
+                                           + "WHERE borrowing.callNumber=book.callNumber AND borrower.bid=borrowing.bid AND inDate IS NULL AND bookSubject=? AND hasSubject.callNumber=borrowing.callNumber ORDER BY callNumber");
+			    ps.setString(1, subject);
+
+			}
+			ResultSet rs = ps.executeQuery();
+     		while (rs.next()) {
+				callNum = rs.getString(1);
+				copyNum = Integer.toString(rs.getInt(2));
+				title = rs.getString(3);
+				outDate = rs.getDate(4);
+				checkOut = "" + outDate + "";
+//				checkOut = checkOut.substring(0, 16).concat(checkOut.substring(24, 28));
+				borrowerType = rs.getString(5);
+				dateDue = getDueDate(outDate, borrowerType);
+				dueDate = "" + dateDue + "";
+				if (today.after(dateDue))
+					overdue = "true";
+				String[] book = {callNum, copyNum, title, checkOut, dueDate, overdue};
+				result.add(book);
+			}
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		
 		
+		return result;
 		
 	}
     
-	public static String generateBookReport(String subject) {
+	public static List<String[]> listMostPopularItems(String year, int n) {
 		// TODO Auto-generated method stub
-		return null;
-	}
-    
-	public static String listMostPopularItems(String year, String n) {
-		// TODO Auto-generated method stub
-		return null;
+		String title, author, callNum;
+		int count, i = 0;
+		List<String[]> result = new ArrayList<String[]>();
+		try {
+			PreparedStatement ps = conn.prepareStatement("SELECT title, mainAuthor, borrowing.callNumber, COUNT(*) AS scount"
+														+ " FROM borrowing, book"
+                                                        + " WHERE borrowing.callNumber=book.callNumber AND TO_CHAR(outDate, 'mm/dd/yyyy') LIKE ?"
+														+ " GROUP BY title, mainAuthor, borrowing.callNumber"
+														+ " ORDER BY scount");
+			ps.setString(1, "%" + year + "%");
+			ResultSet rs = ps.executeQuery();
+			while (rs.next() && i < n) {
+				title = rs.getString(1);
+				author = rs.getString(2);
+				callNum = rs.getString(3);
+				count = rs.getInt(4);
+				String[] item = {title, author, callNum, Integer.toString(count)};
+				i++;
+				result.add(item);
+			}
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return result;
 	}
 }
