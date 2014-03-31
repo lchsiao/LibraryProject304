@@ -97,7 +97,7 @@ public class LibrarySQLUtil {
     
 	public static String checkOutItems(String bid, List<String> items) {
         
-		String result = "Thank you for coming. Here are the bookz you have checked out: \r\n";
+		String result = "";
 		ResultSet rs = null;
 	    String borrowerType;
 	    Date today = new java.util.Date();
@@ -164,18 +164,18 @@ public class LibrarySQLUtil {
 			ps2.close();
 			ps3.close();
 		} catch (SQLException e) {
-			System.out.println("SQLException: " + e.getMessage());
 			try {
 				conn.rollback();
+				return "SQLException: " + e.getMessage();
 			} catch (SQLException e1) {
-				System.out.println("SQLException on rollback: " + e1.getMessage());
+				return "SQLException on rollback: " + e1.getMessage();
 			}
 		}
 		
-		if (result.equals("Thank you for coming. Here are the bookz you have checked out: \r\n")) {
-			result = "You did not check out any bookz today.";
+		if (result.isEmpty()) {
+			return "All of the bookz you have selected are out or on-hold.";
 		}
-		return result;
+		return SUCCESS_STRING + "Here are the bookz you have checked out:\r\n" + result;
 	}
     
 	public static List<String[]> searchBooks(String title, String author, String subject) {
