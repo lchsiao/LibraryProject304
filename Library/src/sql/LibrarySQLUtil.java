@@ -167,8 +167,9 @@ public class LibrarySQLUtil {
                                                          + "WHERE book.callNumber=hasAuthor.callNumber AND book.callNumber=hasSubject.callNumber "
                                                          + "AND (title LIKE ? OR aName=? OR bookSubject=?)");
 			PreparedStatement ps2 = conn.prepareStatement("SELECT copyStatus,COUNT(*) "
-                                                          + "FROM bookCopy,book "
-                                                          + "WHERE bookCopy.callNumber=book.callNumber AND book.callNumber=? GROUP BY copyStatus ORDER BY copyStatus");
+                                                          + "FROM bookCopy "
+                                                          + "WHERE callNumber=? "
+                                                          + "GROUP BY copyStatus ORDER BY copyStatus");
 			
 			ps.setString(1, "%" + title + "%");
 			ps.setString(2, author);
@@ -186,13 +187,13 @@ public class LibrarySQLUtil {
 				while (rs2.next()) {
                     tempStatus = rs2.getString(1);
                     if (tempStatus.equals("in")) {
-                        numIn = rs.getInt(2);
+                        numIn = rs2.getInt(2);
                     }
                     if (tempStatus.equals("out")) {
-                        numOut = rs.getInt(2);
+                        numOut = rs2.getInt(2);
                     }
                     if (tempStatus.equals("on hold")) {
-                        numOnHold = rs.getInt(2);
+                        numOnHold = rs2.getInt(2);
                     }
                 }
                 String[] array = {tempTitle, tempCallNumber, Integer.toString(numIn), Integer.toString(numOut), Integer.toString(numOnHold)};
@@ -205,12 +206,6 @@ public class LibrarySQLUtil {
 			ps2.close();
 			if (rs2 != null)
 				rs2.close();
-			ps3.close();
-			if (rs3 != null)
-				rs3.close();
-			ps4.close();
-			if (rs4 != null)
-				rs4.close();
 		} catch (SQLException e) {
 			try {
 				conn.rollback();
