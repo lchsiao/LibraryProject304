@@ -330,10 +330,18 @@ public class ClerkTabPanel extends UserTabPanel {
 		String result = LibrarySQLUtil.processReturn(returnID, Integer.parseInt(copyNumber));
 		if (result.contains(LibrarySQLUtil.SUCCESS_STRING)) {
 			
+			String bookString = result.substring(result.indexOf(" for ") + 5);
+			String[] words = result.split(" ");
+			String name = words[1];
+			String email = result.substring(result.indexOf(" notified by email at ") + " notified by email at ".length(), result.indexOf(" for "));
+			
+			StringBuilder msgBuilder = new StringBuilder("Hello ").append(name).append(",\n\n");
+			msgBuilder.append("Your held item: ").append(bookString).append(" is now ready for pick-up.");
+			sendEmail("Held Item Ready for Pick-up", email, msgBuilder.toString());
 			
 			JOptionPane.showMessageDialog(this, result);
 		} else {
-			JOptionPane.showMessageDialog(this, result, "Error", JOptionPane.ERROR_MESSAGE);
+			JOptionPane.showMessageDialog(this, result);
 		}
 
 		return true;
