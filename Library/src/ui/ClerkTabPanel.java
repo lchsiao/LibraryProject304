@@ -154,6 +154,7 @@ public class ClerkTabPanel extends UserTabPanel {
 		itemsField = new LinkedList<JTextField>();
 		checkOutItemsPanelTop.add(itemsButton);
 		JTextField firstItem = new JTextField();
+		firstItem.setToolTipText("Enter in the call number of the book to check out.");
 		itemsField.add(firstItem);
 		checkOutItemsPanelTop.add(firstItem);
 		checkOutItemsPanelTop.add(Box.createHorizontalGlue());
