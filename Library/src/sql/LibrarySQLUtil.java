@@ -579,12 +579,13 @@ public class LibrarySQLUtil {
 		PreparedStatement ps;
 		try {
 			if (subject.isEmpty()) {
-			    ps = conn.prepareStatement("SELECT book.callNumber,copyNumber,title,outDate,bType FROM book,borrowing,borrower "
+                ps = conn.prepareStatement("SELECT book.callNumber,copyNumber,title,outDate,bType FROM book,borrowing,borrower "
                                            + "WHERE borrowing.callNumber=book.callNumber AND borrower.bid=borrowing.bid AND inDate IS NULL ORDER BY callNumber");
 			} else {
 				ps = conn.prepareStatement("SELECT book.callNumber,copyNumber,title,outDate,bType FROM book,borrowing,borrower,hasSubject "
                                            + "WHERE borrowing.callNumber=book.callNumber AND borrower.bid=borrowing.bid AND inDate IS NULL AND bookSubject=? AND hasSubject.callNumber=borrowing.callNumber ORDER BY callNumber");
 			    ps.setString(1, subject);
+
 			}
 			ResultSet rs = ps.executeQuery();
      		while (rs.next()) {
@@ -593,7 +594,7 @@ public class LibrarySQLUtil {
 				title = rs.getString(3);
 				outDate = rs.getDate(4);
 				checkOut = "" + outDate + "";
-				checkOut = checkOut.substring(0, 16).concat(checkOut.substring(24, 28));
+//				checkOut = checkOut.substring(0, 16).concat(checkOut.substring(24, 28));
 				borrowerType = rs.getString(5);
 				dateDue = getDueDate(outDate, borrowerType);
 				dueDate = "" + dateDue + "";

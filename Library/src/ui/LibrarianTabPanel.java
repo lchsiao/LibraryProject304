@@ -41,10 +41,11 @@ public class LibrarianTabPanel extends UserTabPanel {
 	//listMostPopularItems fields
 	private static final String LIST_MOST_POPULAR_ITEMS_ACTION = "LISTPOPITEMS";
 
-	
+	private static final String[] HEADER_MOST_POPULAR_ITEMS = new String[] {"Title", "Number of times borrowed"};
 	
 	private JTextField yearField;
 	private JTextField nField;
+	private JFrame mostPopularFrame;
 	
 	
 	@Override
@@ -141,6 +142,8 @@ public class LibrarianTabPanel extends UserTabPanel {
 		generateBookReportSubmit.addActionListener(this);
 		generateBookReportSubmit.setActionCommand(GENERATE_BOOK_REPORT_ACTION);
 		
+		bookReportFrame = new JFrame("Book Report");
+		
 		this.addCard("Generate Book Report", createGenerateBookReportPanel);
 	}
 
@@ -214,7 +217,7 @@ public class LibrarianTabPanel extends UserTabPanel {
 		String subject = subjectField.getText();
 		
 		List<String[]> result = LibrarySQLUtil.generateBookReport(subject);
-		String[][] bookReportData = new String[result.get(0).length][];
+		String[][] bookReportData = result.toArray(new String[result.size()][]);
 		
 		createAndDisplayPopupTable(bookReportFrame, bookReportData, HEADER_BOOK_REPORT);
 	
@@ -232,12 +235,10 @@ public class LibrarianTabPanel extends UserTabPanel {
 			return;
 		}
 		
-		String result = LibrarySQLUtil.listMostPopularItems(year, n);
-		if (result.contains(LibrarySQLUtil.SUCCESS_STRING)) {
-			JOptionPane.showMessageDialog(this, result);
-		} else {
-			JOptionPane.showMessageDialog(this, result, "Error", JOptionPane.ERROR_MESSAGE);
-		}
+		List<String[]> result = LibrarySQLUtil.listMostPopularItems(year, n);
+		String [][] mostPopularData = result.toArray(new String[result.size()][]);
+		
+		createAndDisplayPopupTable(mostPopularFrame, mostPopularData, HEADER_MOST_POPULAR_ITEMS);
 	}
 
 
