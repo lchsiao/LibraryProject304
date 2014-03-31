@@ -20,7 +20,7 @@ public class BorrowerTabPanel extends UserTabPanel {
 
 	// createSearchBooks fields
 	private static final String SEARCH_BOOKS_ACTION = "SEARCHBOOKS";
-	private static final String[] HEADER_SEARCH_BOOKS = new String[] {"Title", "Call No.", "In", "Out", "On Hold"};
+	private static final String[] HEADER_SEARCH_BOOKS = new String[] {"Title", "Call No.", "In", "On", "On Hold"};
 	
 	private JFrame searchBooksFrame;
 	private JTextField titleField;
@@ -232,13 +232,19 @@ public class BorrowerTabPanel extends UserTabPanel {
 		}
 		
 		List<List<String[]>> result = LibrarySQLUtil.checkAcct(bid);
-		String[][] borrowedItemsData = result.get(0).toArray(new String[result.get(0).size()][]);
-		String[][] fineData = result.get(1).toArray(new String[result.get(1).size()][]);
-		String[][] heldItemsData = result.get(2).toArray(new String[result.get(2).size()][]);
+		if (result == null) {
+			JOptionPane.showMessageDialog(this, "The entered card number is not in the system. Please try again.", "Error", JOptionPane.ERROR_MESSAGE);
+		} else {
 		
-		createAndDisplayPopupTable(borrowedItemsFrame, borrowedItemsData, HEADER_BORROWED_ITEMS);
-		createAndDisplayPopupTable(finesFrame, fineData, HEADER_FINES);
-		createAndDisplayPopupTable(heldItemsFrame, heldItemsData, HEADER_HELD_ITEMS);
+			String[][] borrowedItemsData = result.get(0).toArray(new String[result.get(0).size()][]);
+			String[][] fineData = result.get(1).toArray(new String[result.get(1).size()][]);
+			String[][] heldItemsData = result.get(2).toArray(new String[result.get(2).size()][]);
+		
+			createAndDisplayPopupTable(borrowedItemsFrame, borrowedItemsData, HEADER_BORROWED_ITEMS);
+			createAndDisplayPopupTable(finesFrame, fineData, HEADER_FINES);
+			createAndDisplayPopupTable(heldItemsFrame, heldItemsData, HEADER_HELD_ITEMS);
+		
+		}
 	}
 
 	private void holdRequest() {

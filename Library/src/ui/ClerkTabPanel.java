@@ -110,7 +110,7 @@ public class ClerkTabPanel extends UserTabPanel {
 		addBorrowerPanelTop.add(sinOrStNoField);
 
 		JLabel typeLabel = new JLabel("Type:");
-		String[] types = {"Student", "Faculty", "Staff", "General Public"};
+		String[] types = {"Student", "Faculty", "Staff"};
 		typeField = new JComboBox<String>(types);
 		addBorrowerPanelTop.add(typeLabel);
 		addBorrowerPanelTop.add(typeField);
