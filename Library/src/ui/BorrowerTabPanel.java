@@ -20,7 +20,7 @@ public class BorrowerTabPanel extends UserTabPanel {
 
 	// createSearchBooks fields
 	private static final String SEARCH_BOOKS_ACTION = "SEARCHBOOKS";
-	private static final String[] HEADER_SEARCH_BOOKS = new String[] {"Title", "Call No.", "In", "On", "On Hold"};
+	private static final String[] HEADER_SEARCH_BOOKS = new String[] {"Title", "Call No.", "In", "Out", "On Hold"};
 	
 	private JFrame searchBooksFrame;
 	private JTextField titleField;

@@ -1,11 +1,14 @@
 package ui;
 import java.awt.BorderLayout;
 import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 import javax.swing.Box;
 import javax.swing.JButton;
@@ -14,8 +17,13 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.border.EmptyBorder;
+
+import org.apache.commons.mail.EmailException;
+import org.apache.commons.mail.SimpleEmail;
 
 import sql.LibrarySQLUtil;
 
@@ -47,14 +55,14 @@ public class ClerkTabPanel extends UserTabPanel {
 	private static final String PROCESS_RETURN_ACTION = "PROCESSRETURN";
 
 	private JTextField returnIDField;
+	private JTextField copyNumberField;
 	
 	// checkOverdueItems fields
 	private static final String SEND_NOTIFICATION_ACTION = "SENDNOTICIATION";
-			
-	private JLabel itemCallNumberLabel;
-	private JTextField copyNumberField;
-	private JLabel borrowerIDLabel;
+	private static final String[] HEADER_OVERDUE_ITEMS = new String[] {"Call Number", "Borrower ID", "Email", "Send Email"};
+	
 	private JPanel checkOverdueItemsPanel;
+	private JTable overdueItemsTable;
 
 	@Override
 	protected void initializeCards() {
@@ -63,6 +71,7 @@ public class ClerkTabPanel extends UserTabPanel {
 		createCheckOutPanel();
 		createProcessReturnPanel();
 		createOverdueItemsPanel();
+		
 	}
 	
 
@@ -186,20 +195,12 @@ public class ClerkTabPanel extends UserTabPanel {
 	
 	private void createOverdueItemsPanel() {
 		
-		JPanel wrapperPanel = new JPanel();
-		//JScrollPane checkOverdueItemsScrollPane = new JScrollPane();
-		checkOverdueItemsPanel = new JPanel(new GridLayout(0, 3, 10, 10));
+		checkOverdueItemsPanel = new JPanel(new BorderLayout());
 		checkOverdueItemsPanel.setBorder(new EmptyBorder(10, 10, 10, 10));
 		
-		itemCallNumberLabel = new JLabel("Call Number");
-		borrowerIDLabel = new JLabel("Borrower ID");
-	
-		//checkOverdueItemsScrollPane.add(checkOverdueItemsPanel);
-		wrapperPanel.add(checkOverdueItemsPanel);
-		
-		this.addCard("Check Overdue Items", wrapperPanel);
-		
 		updateOverdueItems();
+		
+		this.addCard("Check Overdue Items", checkOverdueItemsPanel);
 	}
 	
 	
@@ -345,38 +346,125 @@ public class ClerkTabPanel extends UserTabPanel {
 		
 		checkOverdueItemsPanel.removeAll();
 		
-		checkOverdueItemsPanel.add(itemCallNumberLabel);
-		checkOverdueItemsPanel.add(borrowerIDLabel);
-		checkOverdueItemsPanel.add(Box.createHorizontalGlue());
-		
 		List<String[]> items = LibrarySQLUtil.getOverdueItems();
+		Object[][] itemsData = new Object[items.size()][];
 		
-		for (String[] item : items) {
+		// add check boxes
+		for (int i = 0; i < items.size(); i++) {
 			
-			int position = (checkOverdueItemsPanel.getComponentCount() - 1) + 3;
+			String[] row = items.get(i);
+			Object[] rowWithCheckBoxesStrings = new Object[row.length + 1];
 			
-			checkOverdueItemsPanel.add(new JLabel(item[0]));
-			checkOverdueItemsPanel.add(new JLabel(item[1]));
-			PositionAwareButton sendNotificationButton = new PositionAwareButton("Send Notification");
-			sendNotificationButton.setPosition(position);
-			sendNotificationButton.setActionCommand(SEND_NOTIFICATION_ACTION);
-			sendNotificationButton.addActionListener(this);
+			int j;
+			for (j = 0; j < row.length; j++) {
+				rowWithCheckBoxesStrings[j] = row[j];
+			}
+			
+			rowWithCheckBoxesStrings[j] = new Boolean(false);
+			
+			itemsData[i] = rowWithCheckBoxesStrings;
 		}
 		
-		checkOverdueItemsPanel.getParent().validate();
+		overdueItemsTable = new JTable(itemsData, HEADER_OVERDUE_ITEMS) {
+			
+			@Override
+			public java.lang.Class<?> getColumnClass(int column) {
+				return getValueAt(0, column).getClass();
+			}
+	 
+	        public boolean isCellEditable(int row, int col) {
+	            if (col == HEADER_OVERDUE_ITEMS.length-1) {
+	                return true;
+	            }
+	            return false;
+	        }
+		};
+		
+		overdueItemsTable.setPreferredScrollableViewportSize(new Dimension(600, 200));
+		overdueItemsTable.setFillsViewportHeight(true);
+
+		JScrollPane scroll = new JScrollPane(overdueItemsTable);
+		
+		JButton sendNotificationButton = new JButton("Send Notification");
+		sendNotificationButton.setActionCommand(SEND_NOTIFICATION_ACTION);
+		sendNotificationButton.addActionListener(this);
+		
+		checkOverdueItemsPanel.add(scroll, BorderLayout.PAGE_START);
+		checkOverdueItemsPanel.add(sendNotificationButton, BorderLayout.CENTER);
+		
+		checkOverdueItemsPanel.validate();
 	}
 	
 	
-	private void sendOverdueEmail(int buttonPosition) {
+	private void sendOverdueEmail() {
 		
-		JTextField callNumberField = (JTextField) checkOverdueItemsPanel.getComponent(buttonPosition-2);
-		JTextField borroweridField = (JTextField) checkOverdueItemsPanel.getComponent(buttonPosition-1);
+		int checkBoxIndex = HEADER_OVERDUE_ITEMS.length-1;
+		int emailIndex = HEADER_OVERDUE_ITEMS.length-2;
+		int nameIndex = HEADER_OVERDUE_ITEMS.length-3;
 		
-		String callNumber = callNumberField.getText();
-		String borrowerid = borroweridField.getText();
+		Map<String, List<String>> emailToCallNoMap = new HashMap<String, List<String>>();
+		Map<String, List<String>> emailToNameMap = new HashMap<String, List<String>>();
 		
-		String email = LibrarySQLUtil.getOverdueEmail(callNumber, borrowerid);
-		JOptionPane.showMessageDialog(this, "Send email to " + email);
+		for (int i = 0; i < overdueItemsTable.getRowCount(); i++) {
+			
+			if ((Boolean) overdueItemsTable.getValueAt(i, checkBoxIndex)) {
+				
+				String email = (String) overdueItemsTable.getValueAt(i, emailIndex);
+				String name = (String) overdueItemsTable.getValueAt(i, nameIndex);
+				String callNoString = (String) overdueItemsTable.getValueAt(i, 0);
+				
+				if (!emailToCallNoMap.containsKey(email)) {
+					emailToCallNoMap.put(email, new ArrayList<String>());
+				}
+				emailToCallNoMap.get(email).add(callNoString);
+				
+				if (!emailToNameMap.containsKey(name)) {
+					emailToNameMap.put(email, new ArrayList<String>());
+				}
+				emailToNameMap.get(email).add(name);
+			}
+		}
+		
+		
+		for (String emailString : emailToCallNoMap.keySet()) {
+			
+			try {
+				SimpleEmail email = new SimpleEmail();
+				email.setHostName("smtp.gmail.com");
+				email.setStartTLSRequired(true);
+				email.setSSLOnConnect(true);
+				email.setSmtpPort(465);
+				email.setSubject("Overdue Library Items");
+				email.setAuthentication("icanhazbookz365@gmail.com", "iliekmudkipz");
+				email.setDebug(true);
+				email.setFrom("icanhazbookz365@gmail.com", "Your Library");
+				email.addTo(emailString);
+
+				StringBuilder msgBuilder = new StringBuilder("Hello ");
+				for (String name : emailToNameMap.get(emailString)) {
+					msgBuilder.append(name).append(", ");
+				}
+				msgBuilder.setLength(msgBuilder.length()-1);
+				msgBuilder.append("\n\n");
+				msgBuilder.append("You have the following overdue items: ");
+
+				for (String callno : emailToCallNoMap.get(emailString)) {
+					msgBuilder.append(callno).append(", ");
+				} 
+				msgBuilder.setLength(msgBuilder.length()-2);
+				msgBuilder.append("\n\n");
+				msgBuilder.append("Please return them immediately.");
+
+				email.setMsg(msgBuilder.toString());
+				
+				email.send();
+			} catch (EmailException e) {
+				e.printStackTrace();
+			}
+
+		}
+		
+		JOptionPane.showMessageDialog(this, "Emails sent to " + emailToCallNoMap);
 	}
 
 	
@@ -402,8 +490,7 @@ public class ClerkTabPanel extends UserTabPanel {
 				processReturn();
 				break;
 			case SEND_NOTIFICATION_ACTION:
-				buttonPosition = ((PositionAwareButton)e.getSource()).getPosition();
-				sendOverdueEmail(buttonPosition);
+				sendOverdueEmail();
 				break;
 				
 		}
