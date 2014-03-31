@@ -554,15 +554,20 @@ public class LibrarySQLUtil {
         
 		List<String[]> result = new ArrayList<String[]>();
 		Date outDate, dateDue, today = new java.util.Date();
-		String callNum, copyNum, title, checkOut, dueDate, overdue = "false", borrowerType;
+		String callNum, copyNum, title, checkOut, dueDate, overdue = "N", borrowerType;
 		PreparedStatement ps;
 		try {
 			if (subject.isEmpty()) {
-                ps = conn.prepareStatement("SELECT book.callNumber,copyNumber,title,outDate,bType FROM book,borrowing,borrower "
-                                           + "WHERE borrowing.callNumber=book.callNumber AND borrower.bid=borrowing.bid AND inDate IS NULL ORDER BY callNumber");
+                ps = conn.prepareStatement("SELECT book.callNumber,copyNo,title,outDate,bType"
+                							+ " FROM book,borrowing,borrower"
+                                            + " WHERE borrowing.callNumber=book.callNumber AND borrower.bid=borrowing.bid AND inDate IS NULL"
+                                            + " ORDER BY callNumber");
 			} else {
-				ps = conn.prepareStatement("SELECT book.callNumber,copyNumber,title,outDate,bType FROM book,borrowing,borrower,hasSubject "
-                                           + "WHERE borrowing.callNumber=book.callNumber AND borrower.bid=borrowing.bid AND inDate IS NULL AND bookSubject=? AND hasSubject.callNumber=borrowing.callNumber ORDER BY callNumber");
+				ps = conn.prepareStatement("SELECT book.callNumber,copyNo,title,outDate,bType"
+											+ " FROM book,borrowing,borrower,hasSubject"
+                                            + " WHERE borrowing.callNumber=book.callNumber AND borrower.bid=borrowing.bid"
+                                            + " AND inDate IS NULL AND bookSubject=? AND hasSubject.callNumber=borrowing.callNumber"
+                                            + " ORDER BY callNumber");
 			    ps.setString(1, subject);
                 
 			}
@@ -577,9 +582,10 @@ public class LibrarySQLUtil {
 				dateDue = getDueDate(outDate, borrowerType);
 				dueDate = "" + dateDue + "";
 				if (today.after(dateDue))
-					overdue = "true";
+					overdue = "Y";
 				String[] book = {callNum, copyNum, title, checkOut, dueDate, overdue};
 				result.add(book);
+				overdue = "N";
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();
