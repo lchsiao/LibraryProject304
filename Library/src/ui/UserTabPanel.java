@@ -92,7 +92,7 @@ public abstract class UserTabPanel extends JPanel implements ActionListener {
 			frame.validate();
 			frame.setVisible(true);
 		} else {
-			JOptionPane.showMessageDialog(this, "No results found");
+			JOptionPane.showMessageDialog(this, "No results found for: " + frame.getTitle());
 		}
 	}
 
