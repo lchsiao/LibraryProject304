@@ -619,9 +619,12 @@ public class LibrarySQLUtil {
 		int count, i = 0;
 		List<String[]> result = new ArrayList<String[]>();
 		try {
-			PreparedStatement ps = conn.prepareStatement("SELECT title,mainAuthor,callNumber,COUNT(*) AS scount FROM borrowing,book "
-                                                         + "WHERE borrowing.callNumber = book.callNumber AND CAST(outDate AS VARCHAR(30)) LIKE ? GROUP BY borrowing.callNumber ORDER BY scount");
-			ps.setString(1, year);
+			PreparedStatement ps = conn.prepareStatement("SELECT title, mainAuthor, borrowing.callNumber, COUNT(*) AS scount"
+														+ " FROM borrowing, book"
+                                                        + " WHERE borrowing.callNumber=book.callNumber AND TO_CHAR(outDate, 'mm/dd/yyyy') LIKE ?"
+														+ " GROUP BY title, mainAuthor, borrowing.callNumber"
+														+ " ORDER BY scount");
+			ps.setString(1, "%" + year + "%");
 			ResultSet rs = ps.executeQuery();
 			while (rs.next() && i < n) {
 				title = rs.getString(1);

@@ -235,7 +235,7 @@ public class LibrarianTabPanel extends UserTabPanel {
 			return;
 		}
 		
-		List<String[]> result = LibrarySQLUtil.listMostPopularItems(year, n);
+		List<String[]> result = LibrarySQLUtil.listMostPopularItems(year, Integer.parseInt(n));
 		String [][] mostPopularData = result.toArray(new String[result.size()][]);
 		
 		createAndDisplayPopupTable(mostPopularFrame, mostPopularData, HEADER_MOST_POPULAR_ITEMS);
