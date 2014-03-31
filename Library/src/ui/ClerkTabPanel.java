@@ -465,11 +465,14 @@ public class ClerkTabPanel extends UserTabPanel {
 				msgBuilder.append(nameList.get(i)).append(", ");
 			}
 			
-			if (nameList.size() <= 2) {
+			if (nameList.size() == 2) {
 				msgBuilder.setLength(msgBuilder.length()-2);
 			}
 			
-			msgBuilder.append(" and ").append(nameList.get(nameList.size()-1)).append(",");
+			if (nameList.size() != 1) {
+				msgBuilder.append(" and ");
+			}
+			msgBuilder.append(nameList.get(nameList.size()-1)).append(",");
 			
 			msgBuilder.append("\n\n");
 			msgBuilder.append("You have the following overdue items: ");
