@@ -9,6 +9,9 @@ import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 
+import javax.mail.MessagingException;
+import javax.mail.internet.MimeBodyPart;
+import javax.mail.internet.MimeMultipart;
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -103,6 +106,8 @@ public abstract class UserTabPanel extends JPanel implements ActionListener {
 		try {
 			SimpleEmail email = new SimpleEmail();
 			
+			msg = msg + "\n\nYour Librarian,\nMelon Melon\nicanhazbookz365@gmail.com\n";
+			
 			email.setHostName("smtp.gmail.com");
 			email.setStartTLSRequired(true);
 			email.setSSLOnConnect(true);
@@ -112,10 +117,24 @@ public abstract class UserTabPanel extends JPanel implements ActionListener {
 			email.setDebug(true);
 			email.setFrom("icanhazbookz365@gmail.com", "Your Library");
 			email.addTo(recipient);
-			email.setMsg(msg);
+			
+			MimeMultipart multipart = new MimeMultipart();
+			
+			MimeBodyPart msgPart = new MimeBodyPart();
+			msgPart.setText(msg);
+			multipart.addBodyPart(msgPart);
+			
+			MimeBodyPart imagePart = new MimeBodyPart();
+			imagePart.setContent("<img src=\"https://i.chzbgr.com/maxW500/4155728640/h3BA62CF1/\" id=\"_r_a_4155728640\" height=\"190\" width=\"175\">", "text/html");
 
+			multipart.addBodyPart(imagePart);
+			
+			email.setContent(multipart);
+			
 			email.send();
 		} catch (EmailException e) {
+			e.printStackTrace();
+		} catch (MessagingException e) {
 			e.printStackTrace();
 		}
 	}
