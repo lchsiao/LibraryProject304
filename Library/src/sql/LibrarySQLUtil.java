@@ -453,13 +453,14 @@ public class LibrarySQLUtil {
 	public static List<String[]> getOverdueItems() {
 		// TODO Auto-generated method stub
 		List<String[]> result = new ArrayList<String[]>();
-		String borrowerType, email, callNum, copyNum;
+		String borrowerType, email, callNum, title, borrowerName;
 		Date dueDate;
 		Date today = new java.util.Date();
 		try {
-			PreparedStatement ps = conn.prepareStatement("SELECT callNumber, copyNo, bType, emailAddress, outDate"
-                                                         + " FROM borrowing, borrower"
-                                                         + " WHERE borrowing.bid=borrower.bid AND inDate IS NULL");
+			PreparedStatement ps = conn.prepareStatement("SELECT callNumber,bName,bType,emailAddress,outDate,title"
+                                                         + " FROM borrowing,borrower,book"
+                                                         + " WHERE borrowing.bid=borrower.bid AND AND book.callNumber=borrowing.callNumber AND inDate IS NULL"
+                                                         + " ORDER BY bName");
 			ResultSet rs = ps.executeQuery();
 			while (rs.next()) {
 				borrowerType = rs.getString(3);
@@ -467,8 +468,9 @@ public class LibrarySQLUtil {
 				if (today.before(dueDate)) {
 					email = rs.getString(4);
 					callNum = rs.getString(1);
-					copyNum = Integer.toString(rs.getInt(2));
-					String[] overdue = {callNum, copyNum, email};
+					title = rs.getString(6);
+					borrowerName = rs.getString(2);
+					String[] overdue = {borrowerName, title, callNum, email};
 					result.add(overdue);
 				}
 			}
