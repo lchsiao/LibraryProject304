@@ -118,8 +118,13 @@ public class LibrarySQLUtil {
 			PreparedStatement p2 = conn.prepareStatement("SELECT * FROM fine,borrowing WHERE bid=? AND fine.borid=borrowing.borid");
 			p2.setString(1, bid);
 			ResultSet r2 = p2.executeQuery();
-			if (r2.next())
+			if (r2.next()) {
+				r2.close();
+				p2.close();
 				return "This borrower is blocked because he/she has an unpaid fine.";
+			}
+			r2.close();
+			p2.close();
 		} catch (SQLException e3) {
 			System.out.println(e3.getMessage());
 			return "Error. Transaction terminated.";
