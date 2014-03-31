@@ -221,6 +221,14 @@ public class ClerkTabPanel extends UserTabPanel {
 
 		String result = LibrarySQLUtil.addBorrower(name, password, address, phone, email, sinOrStdNo, type);
 		if (result.contains(LibrarySQLUtil.SUCCESS_STRING)) {
+			
+			nameField.setText("");
+			passwordField.setText("");
+			addressField.setText("");
+			phoneField.setText("");
+			emailField.setText("");
+			sinOrStNoField.setText("");
+			
 			JOptionPane.showMessageDialog(this, result);
 		} else {
 			JOptionPane.showMessageDialog(this, result, "Error", JOptionPane.ERROR_MESSAGE);

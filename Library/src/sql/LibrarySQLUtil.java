@@ -19,7 +19,7 @@ public class LibrarySQLUtil {
 	private static Connection conn;
 	
 	// command strings
-	public static final String SUCCESS_STRING = "Success.";
+	public static final String SUCCESS_STRING = "Success. ";
 	
 	static {
 		loadDriver();
@@ -85,10 +85,10 @@ public class LibrarySQLUtil {
 			ps.close();
 		} catch (SQLException e) {
 			try {
-				System.out.println("SQLException: " + e.getMessage());
 				conn.rollback();
+				return "SQLException: " + e.getMessage();
 			} catch (SQLException e1) {
-				System.out.println("SQLException on rollback: " + e1.getMessage());
+				return "SQLException on rollback: " + e1.getMessage();
 			}
 		}
 		return SUCCESS_STRING + "New borrower " +  "added.";
@@ -532,10 +532,10 @@ public class LibrarySQLUtil {
 			ps.close();
 		} catch (SQLException e) {
 			try {
-				System.out.println("SQLException: " + e.getMessage());
 				conn.rollback();
+				return "SQLException: " + e.getMessage();
 			} catch (SQLException e1) {
-				System.out.println("SQLException on rollback: " + e1.getMessage());
+				return "SQLException on rollback: " + e1.getMessage();
 			}
 		}
 		return SUCCESS_STRING + "New book " +  "added.";

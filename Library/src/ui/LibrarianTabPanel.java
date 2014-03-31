@@ -206,6 +206,14 @@ public class LibrarianTabPanel extends UserTabPanel {
 		String result = LibrarySQLUtil.addBook(callNumber, isbn, title, author, publisher, publishedYear);
 		if (result.contains(LibrarySQLUtil.SUCCESS_STRING)) {
 			JOptionPane.showMessageDialog(this, result);
+			
+			callNumberField.setText("");
+			isbnField.setText("");
+			titleField.setText("");
+			authorField.setText("");
+			publisherField.setText("");
+			publishedYearField.setText("");
+			
 		} else {
 			JOptionPane.showMessageDialog(this, result, "Error", JOptionPane.ERROR_MESSAGE);
 		}
