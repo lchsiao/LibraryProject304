@@ -86,9 +86,9 @@ public class LibrarySQLUtil {
 		} catch (SQLException e) {
 			try {
 				conn.rollback();
-				return "SQLException: " + e.getMessage();
+				return e.getMessage();
 			} catch (SQLException e1) {
-				return "SQLException on rollback: " + e1.getMessage();
+				return e1.getMessage();
 			}
 		}
 		return SUCCESS_STRING + "New borrower " +  "added.";
@@ -111,8 +111,7 @@ public class LibrarySQLUtil {
 			borrowerType = temp.getString(2);
 			p.close();
 		} catch (SQLException e2) {
-			System.out.println(e2.getMessage());
-			return "Borrower ID not found.";
+			return e2.getMessage();
 		}
 		try {
 			PreparedStatement p2 = conn.prepareStatement("SELECT * FROM fine,borrowing WHERE bid=? AND fine.borid=borrowing.borid");
@@ -126,8 +125,7 @@ public class LibrarySQLUtil {
 			r2.close();
 			p2.close();
 		} catch (SQLException e3) {
-			System.out.println(e3.getMessage());
-			return "Error. Transaction terminated.";
+			return e3.getMessage();
 		}
 		try {
 			PreparedStatement ps = conn.prepareStatement("SELECT book.callNumber,copyNo,title"
@@ -166,9 +164,9 @@ public class LibrarySQLUtil {
 		} catch (SQLException e) {
 			try {
 				conn.rollback();
-				return "SQLException: " + e.getMessage();
+				return e.getMessage();
 			} catch (SQLException e1) {
-				return "SQLException on rollback: " + e1.getMessage();
+				return e1.getMessage();
 			}
 		}
 		
@@ -534,9 +532,9 @@ public class LibrarySQLUtil {
 		} catch (SQLException e) {
 			try {
 				conn.rollback();
-				return "SQLException: " + e.getMessage();
+				return e.getMessage();
 			} catch (SQLException e1) {
-				return "SQLException on rollback: " + e1.getMessage();
+				return e1.getMessage();
 			}
 		}
 		
@@ -559,9 +557,9 @@ public class LibrarySQLUtil {
 			} catch (SQLException e) {
 				try {
 					conn.rollback();
-					return "SQLException: " + e.getMessage();
+					return e.getMessage();
 				} catch (SQLException e1) {
-					return "SQLException on rollback: " + e1.getMessage();
+					return e1.getMessage();
 				}
 			}
 		}
@@ -584,9 +582,9 @@ public class LibrarySQLUtil {
 			} catch (SQLException e) {
 				try {
 					conn.rollback();
-					return "SQLException: " + e.getMessage();
+					return e.getMessage();
 				} catch (SQLException e1) {
-					return "SQLException on rollback: " + e1.getMessage();
+					return e1.getMessage();
 				}
 			}
 		}
