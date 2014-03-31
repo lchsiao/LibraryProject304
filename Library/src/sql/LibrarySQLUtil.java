@@ -97,7 +97,7 @@ public class LibrarySQLUtil {
     
 	public static String checkOutItems(String bid, List<String> items) {
         
-		String result = new String();
+		String result = "";
 		ResultSet rs = null;
 	    String borrowerType;
 	    Date today = new java.util.Date();
@@ -130,9 +130,14 @@ public class LibrarySQLUtil {
 			return "Error. Transaction terminated.";
 		}
 		try {
-			PreparedStatement ps = conn.prepareStatement("SELECT callNumber,copyNo,title FROM bookCopy,book WHERE bookCopy.callNumber=book.callNumber AND callNumber=? AND copyStatus='in'");
-			PreparedStatement ps2 = conn.prepareStatement("UPDATE bookCopy SET copyStatus='out' WHERE callNumber=? AND copyNo=?");
-			PreparedStatement ps3 = conn.prepareStatement("INSERT INTO borrowing (borid,bid,callNumber,copyNo,outDate,inDate) VALUES (seq_borrowing.nextval,?,?,?,?,?)");
+			PreparedStatement ps = conn.prepareStatement("SELECT book.callNumber,copyNo,title"
+														+ " FROM bookCopy,book"
+														+ " WHERE bookCopy.callNumber=book.callNumber AND book.callNumber=? AND copyStatus='in'");
+			PreparedStatement ps2 = conn.prepareStatement("UPDATE bookCopy"
+														+ " SET copyStatus='out'"
+														+ " WHERE callNumber=? AND copyNo=?");
+			PreparedStatement ps3 = conn.prepareStatement("INSERT INTO borrowing (borid,bid,callNumber,copyNo,outDate,inDate)"
+														+ " VALUES (seq_borrowing.nextval,?,?,?,?,?)");
 			
 			for (int i = 0; i < items.size(); i++) {
 				ps.setString(1,items.get(i));
@@ -149,7 +154,7 @@ public class LibrarySQLUtil {
 					ps3.setDate(5, null);
 					ps3.executeUpdate();
 					
-					result.concat("Successfully checked out " + rs.getString(3) + ". Due on " + getDueDate(today, borrowerType) + "\r\n");
+					result = SUCCESS_STRING + " Successfully checked out " + rs.getString(3) + ". Due on " + getDueDate(today, borrowerType) + "\r\n";
 				}
 			}
 			conn.commit();
@@ -167,6 +172,9 @@ public class LibrarySQLUtil {
 			}
 		}
 		
+		if (result == "") {
+			result = "Error. Cannot check out this item because it is already out.";
+		}
 		return result;
 	}
     
