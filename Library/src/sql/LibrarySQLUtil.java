@@ -457,9 +457,9 @@ public class LibrarySQLUtil {
 		Date dueDate;
 		Date today = new java.util.Date();
 		try {
-			PreparedStatement ps = conn.prepareStatement("SELECT callNumber,bName,bType,emailAddress,outDate,title"
+			PreparedStatement ps = conn.prepareStatement("SELECT book.callNumber,bName,bType,emailAddress,outDate,title"
                                                          + " FROM borrowing,borrower,book"
-                                                         + " WHERE borrowing.bid=borrower.bid AND AND book.callNumber=borrowing.callNumber AND inDate IS NULL"
+                                                         + " WHERE borrowing.bid=borrower.bid AND book.callNumber=borrowing.callNumber AND inDate IS NULL"
                                                          + " ORDER BY bName");
 			ResultSet rs = ps.executeQuery();
 			while (rs.next()) {

@@ -22,9 +22,6 @@ import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.border.EmptyBorder;
 
-import org.apache.commons.mail.EmailException;
-import org.apache.commons.mail.SimpleEmail;
-
 import sql.LibrarySQLUtil;
 
 
@@ -59,7 +56,7 @@ public class ClerkTabPanel extends UserTabPanel {
 	
 	// checkOverdueItems fields
 	private static final String SEND_NOTIFICATION_ACTION = "SENDNOTICIATION";
-	private static final String[] HEADER_OVERDUE_ITEMS = new String[] {"Call Number", "Borrower ID", "Email", "Send Email"};
+	private static final String[] HEADER_OVERDUE_ITEMS = new String[] {"Borrower Name", "Title", "Call Number", "Email", "Send Email"};
 	
 	private JPanel checkOverdueItemsPanel;
 	private JTable overdueItemsTable;
@@ -332,6 +329,8 @@ public class ClerkTabPanel extends UserTabPanel {
 
 		String result = LibrarySQLUtil.processReturn(returnID, Integer.parseInt(copyNumber));
 		if (result.contains(LibrarySQLUtil.SUCCESS_STRING)) {
+			
+			
 			JOptionPane.showMessageDialog(this, result);
 		} else {
 			JOptionPane.showMessageDialog(this, result, "Error", JOptionPane.ERROR_MESSAGE);
@@ -400,9 +399,11 @@ public class ClerkTabPanel extends UserTabPanel {
 		
 		int checkBoxIndex = HEADER_OVERDUE_ITEMS.length-1;
 		int emailIndex = HEADER_OVERDUE_ITEMS.length-2;
-		int nameIndex = HEADER_OVERDUE_ITEMS.length-3;
+		int nameIndex = 0;
+		int callNoIndex = 2;
+		int titleIndex = 1; 
 		
-		Map<String, List<String>> emailToCallNoMap = new HashMap<String, List<String>>();
+		Map<String, List<String>> emailToBookMap = new HashMap<String, List<String>>();
 		Map<String, List<String>> emailToNameMap = new HashMap<String, List<String>>();
 		
 		for (int i = 0; i < overdueItemsTable.getRowCount(); i++) {
@@ -411,14 +412,16 @@ public class ClerkTabPanel extends UserTabPanel {
 				
 				String email = (String) overdueItemsTable.getValueAt(i, emailIndex);
 				String name = (String) overdueItemsTable.getValueAt(i, nameIndex);
-				String callNoString = (String) overdueItemsTable.getValueAt(i, 0);
+				String callNoString = (String) overdueItemsTable.getValueAt(i, callNoIndex);
+				String titleString = (String) overdueItemsTable.getValueAt(i, titleIndex);
+				String bookString = new StringBuilder(titleString).append("(").append(callNoString).append(")").toString();
 				
-				if (!emailToCallNoMap.containsKey(email)) {
-					emailToCallNoMap.put(email, new ArrayList<String>());
+				if (!emailToBookMap.containsKey(email)) {
+					emailToBookMap.put(email, new ArrayList<String>());
 				}
-				emailToCallNoMap.get(email).add(callNoString);
+				emailToBookMap.get(email).add(bookString);
 				
-				if (!emailToNameMap.containsKey(name)) {
+				if (!emailToNameMap.containsKey(email)) {
 					emailToNameMap.put(email, new ArrayList<String>());
 				}
 				emailToNameMap.get(email).add(name);
@@ -426,48 +429,38 @@ public class ClerkTabPanel extends UserTabPanel {
 		}
 		
 		
-		for (String emailString : emailToCallNoMap.keySet()) {
+		for (String emailString : emailToBookMap.keySet()) {
 			
-			try {
-				SimpleEmail email = new SimpleEmail();
-				email.setHostName("smtp.gmail.com");
-				email.setStartTLSRequired(true);
-				email.setSSLOnConnect(true);
-				email.setSmtpPort(465);
-				email.setSubject("Overdue Library Items");
-				email.setAuthentication("icanhazbookz365@gmail.com", "iliekmudkipz");
-				email.setDebug(true);
-				email.setFrom("icanhazbookz365@gmail.com", "Your Library");
-				email.addTo(emailString);
-
-				StringBuilder msgBuilder = new StringBuilder("Hello ");
-				for (String name : emailToNameMap.get(emailString)) {
-					msgBuilder.append(name).append(", ");
-				}
-				msgBuilder.setLength(msgBuilder.length()-1);
-				msgBuilder.append("\n\n");
-				msgBuilder.append("You have the following overdue items: ");
-
-				for (String callno : emailToCallNoMap.get(emailString)) {
-					msgBuilder.append(callno).append(", ");
-				} 
-				msgBuilder.setLength(msgBuilder.length()-2);
-				msgBuilder.append("\n\n");
-				msgBuilder.append("Please return them immediately.");
-
-				email.setMsg(msgBuilder.toString());
-				
-				email.send();
-			} catch (EmailException e) {
-				e.printStackTrace();
+			StringBuilder msgBuilder = new StringBuilder("Hello ");
+			
+			List<String> nameList = emailToNameMap.get(emailString);
+			for (int i = 0; i < nameList.size()-1; i++) {
+				msgBuilder.append(nameList.get(i)).append(", ");
 			}
+			
+			if (nameList.size() <= 2) {
+				msgBuilder.setLength(msgBuilder.length()-2);
+			}
+			
+			msgBuilder.append(" and ").append(nameList.get(nameList.size()-1)).append(",");
+			
+			msgBuilder.append("\n\n");
+			msgBuilder.append("You have the following overdue items: ");
 
+			for (String bookString : emailToBookMap.get(emailString)) {
+				msgBuilder.append(bookString).append(", ");
+			} 
+			msgBuilder.setLength(msgBuilder.length()-2);
+			msgBuilder.append("\n\n");
+			msgBuilder.append("Please return them immediately.");
+			
+			sendEmail("Overdue Library Items", emailString, msgBuilder.toString());
 		}
 		
-		JOptionPane.showMessageDialog(this, "Emails sent to " + emailToCallNoMap);
+		JOptionPane.showMessageDialog(this, "Emails sent to " + emailToBookMap);
 	}
 
-	
+
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		

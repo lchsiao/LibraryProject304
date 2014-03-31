@@ -17,6 +17,9 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 
+import org.apache.commons.mail.EmailException;
+import org.apache.commons.mail.SimpleEmail;
+
 @SuppressWarnings("serial")
 public abstract class UserTabPanel extends JPanel implements ActionListener {
 	
@@ -86,6 +89,28 @@ public abstract class UserTabPanel extends JPanel implements ActionListener {
     	comboBox.addItem(name);
     	cards.add(name, c);
     }
+    
+	protected void sendEmail(String subject, String recipient, String msg) {
+		
+		try {
+			SimpleEmail email = new SimpleEmail();
+			
+			email.setHostName("smtp.gmail.com");
+			email.setStartTLSRequired(true);
+			email.setSSLOnConnect(true);
+			email.setSmtpPort(465);
+			email.setSubject(subject);
+			email.setAuthentication("icanhazbookz365@gmail.com", "iliekmudkipz");
+			email.setDebug(true);
+			email.setFrom("icanhazbookz365@gmail.com", "Your Library");
+			email.addTo(recipient);
+			email.setMsg(msg);
+
+			email.send();
+		} catch (EmailException e) {
+			e.printStackTrace();
+		}
+	}
     
     protected void showDefaultError() {
     	JOptionPane.showMessageDialog(this, "Error. One or more required fields empty.", "Error",
