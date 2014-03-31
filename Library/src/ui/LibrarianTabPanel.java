@@ -41,7 +41,8 @@ public class LibrarianTabPanel extends UserTabPanel {
 	//listMostPopularItems fields
 	private static final String LIST_MOST_POPULAR_ITEMS_ACTION = "LISTPOPITEMS";
 
-	private static final String[] HEADER_MOST_POPULAR_ITEMS = new String[] {"Title", "Number of times borrowed"};
+	private static final String[] HEADER_MOST_POPULAR_ITEMS = new String[] {"Title", "Author", "Call Number", 
+																				"Number of times borrowed"};
 	
 	private JTextField yearField;
 	private JTextField nField;
@@ -180,6 +181,8 @@ public class LibrarianTabPanel extends UserTabPanel {
 		listMostPopularItemsSubmit.addActionListener(this);
 		listMostPopularItemsSubmit.setActionCommand(LIST_MOST_POPULAR_ITEMS_ACTION);
 		
+		mostPopularFrame = new JFrame("Most Popular Books");
+		
 		this.addCard("List Most Popular Items", createListMostPopularItemsPanel);
 	}
 
@@ -230,7 +233,6 @@ public class LibrarianTabPanel extends UserTabPanel {
 		String n = nField.getText();
 		
 		if (year.isEmpty() || n.isEmpty()) {
-			
 			showDefaultError();
 			return;
 		}
