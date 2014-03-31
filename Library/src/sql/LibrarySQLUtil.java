@@ -64,7 +64,7 @@ public class LibrarySQLUtil {
 	}
     
 	public static String addBorrower(String name, String password, String address, String phone, String email, String sinOrStdNo, String type) {
-
+        
 		Date today = new java.util.Date();
 		try {
 			PreparedStatement ps = conn.prepareStatement("INSERT INTO borrower (bid,bPass,bName,address,phone,emailAddress,sinOrStNo,expiryDate,bType) "
@@ -96,7 +96,7 @@ public class LibrarySQLUtil {
     
     
 	public static String checkOutItems(String bid, List<String> items) {
-	
+        
 		String result = new String();
 		ResultSet rs = null;
 	    String borrowerType;
@@ -114,7 +114,16 @@ public class LibrarySQLUtil {
 			System.out.println(e2.getMessage());
 			return "Borrower ID not found.";
 		}
-		
+		try {
+			PreparedStatement p2 = conn.prepareStatement("SELECT * FROM fine,borrowing WHERE bid=? AND fine.borid=borrowing.borid");
+			p2.setString(1, bid);
+			ResultSet r2 = p2.executeQuery();
+			if (r2.next())
+				return "This borrower is blocked because he/she has an unpaid fine.";
+		} catch (SQLException e3) {
+			System.out.println(e3.getMessage());
+			return "Error. Transaction terminated.";
+		}
 		try {
 			PreparedStatement ps = conn.prepareStatement("SELECT callNumber,copyNo,title FROM bookCopy,book WHERE bookCopy.callNumber=book.callNumber AND callNumber=? AND copyStatus='in'");
 			PreparedStatement ps2 = conn.prepareStatement("UPDATE bookCopy SET copyStatus='out' WHERE callNumber=? AND copyNo=?");
@@ -251,7 +260,7 @@ public class LibrarySQLUtil {
 			dueDate = getDueDate(borrowedDate, borrowerType);
 			if (today.after(dueDate)) {
 				// assess the fine if overdue
-				int fine = (int) ((Math.round((float)((today.getTime() - dueDate.getTime())/86400000))) * 0.05);
+				int fine = (int) ((Math.round((float)((today.getTime() - dueDate.getTime())/86400000))) * 1);
 				ps8.setInt(2, fine);
 				ps8.setDate(3, new java.sql.Date(today.getTime()));
 				ps8.setDate(4, null);
@@ -299,7 +308,7 @@ public class LibrarySQLUtil {
 	}
     
 	public static List<List<String[]>> checkAcct(String bid) {
-
+        
 		List<List<String[]>> result = new ArrayList<List<String[]>>();
 		List<String[]> borrows = new ArrayList<String[]>(), fines = new ArrayList<String[]>(), holds = new ArrayList<String[]>();
 		String title, borrowerType, dueDate, fineAmount, callNum, copyNum;
@@ -336,7 +345,7 @@ public class LibrarySQLUtil {
 			ps2.setString(1, bid);
 			ResultSet rs2 = ps2.executeQuery();
 			while (rs2.next()) {
-				fineAmount = Integer.toString(rs2.getInt(1));
+				fineAmount = "$" + Integer.toString(rs2.getInt(1)) + ".00";
 				callNum = rs2.getString(2);
 				String[] fine = {callNum, fineAmount};
 				fines.add(fine);
@@ -363,7 +372,7 @@ public class LibrarySQLUtil {
 	}
     
 	public static String holdRequest(String bid, String callNumber) {
-
+        
 		Date today = new java.util.Date();
 		try {
 			PreparedStatement ps = conn.prepareStatement("SELECT * FROM bookCopy WHERE callNumber=? AND copyStatus='in'");
@@ -411,7 +420,7 @@ public class LibrarySQLUtil {
 	}
     
 	public static String payFines(int borid, int amount) {
-
+        
 		try {
 			int moneyOwed;
 			PreparedStatement ps = conn.prepareStatement("SELECT amount FROM fine WHERE borid=?");
@@ -444,7 +453,7 @@ public class LibrarySQLUtil {
 	}
 	
 	public static List<String[]> getOverdueItems() {
-
+        
 		List<String[]> result = new ArrayList<String[]>();
 		String borrowerType, email, callNum, title, borrowerName;
 		Date dueDate;
@@ -458,7 +467,7 @@ public class LibrarySQLUtil {
 			while (rs.next()) {
 				borrowerType = rs.getString(3);
 				dueDate = getDueDate(rs.getDate(5), borrowerType);
-				if (today.before(dueDate)) {
+				if (today.after(dueDate)) {
 					email = rs.getString(4);
 					callNum = rs.getString(1);
 					title = rs.getString(6);
@@ -478,7 +487,7 @@ public class LibrarySQLUtil {
 	
 	public static String addBook(String callNumber, String isbn, String title,
                                  String author, String publisher, String publishedYear) {
-
+        
 		try {
 			PreparedStatement ps = conn.prepareStatement("INSERT INTO book VALUES (?,?,?,?,?,?)");
 			
@@ -512,7 +521,7 @@ public class LibrarySQLUtil {
      **/
 	
 	public static List<String[]> generateBookReport(String subject) {
-
+        
 		List<String[]> result = new ArrayList<String[]>();
 		Date outDate, dateDue, today = new java.util.Date();
 		String callNum, copyNum, title, checkOut, dueDate, overdue = "false", borrowerType;
@@ -534,7 +543,6 @@ public class LibrarySQLUtil {
 				title = rs.getString(3);
 				outDate = rs.getDate(4);
 				checkOut = "" + outDate + "";
-                //				checkOut = checkOut.substring(0, 16).concat(checkOut.substring(24, 28));
 				borrowerType = rs.getString(5);
 				dateDue = getDueDate(outDate, borrowerType);
 				dueDate = "" + dateDue + "";
