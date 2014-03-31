@@ -6,6 +6,7 @@ import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -15,6 +16,7 @@ import java.util.Map;
 import javax.swing.Box;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
+import javax.swing.JFormattedTextField;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -97,7 +99,11 @@ public class ClerkTabPanel extends UserTabPanel {
 		addBorrowerPanelTop.add(addressField);
 
 		JLabel phoneLabel = new JLabel("Phone:");
-		phoneField = new JTextField();
+		NumberFormat format = NumberFormat.getIntegerInstance();
+		format.setMinimumIntegerDigits(9);
+		format.setMaximumIntegerDigits(9);
+		format.setGroupingUsed(false);
+		phoneField = new JFormattedTextField(format);
 		addBorrowerPanelTop.add(phoneLabel);
 		addBorrowerPanelTop.add(phoneField);
 

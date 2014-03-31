@@ -25,6 +25,8 @@ public class LibrarianTabPanel extends UserTabPanel {
 	private JTextField isbnField;
 	private JTextField titleField;
 	private JTextField authorField;
+	private JTextField authorsField;
+	private JTextField subjectsField;
 	private JTextField publisherField;
 	private JTextField publishedYearField;	
 	
@@ -92,6 +94,18 @@ public class LibrarianTabPanel extends UserTabPanel {
 		authorField = new JTextField();
 		createAddBookPanelTop.add(authorLabel);
 		createAddBookPanelTop.add(authorField);
+		
+		JLabel authorsLabel = new JLabel("Additional Authors:");
+		authorsField = new JTextField();
+		createAddBookPanelTop.add(authorsLabel);
+		createAddBookPanelTop.add(authorsField);
+		authorsField.setToolTipText("Separate additional author names by commas.");
+		
+		JLabel subjectsLabel = new JLabel("Subjects:");
+		subjectsField = new JTextField();
+		createAddBookPanelTop.add(subjectsLabel);
+		createAddBookPanelTop.add(subjectsField);
+		subjectsField.setToolTipText("Separate subject names by commas.");
 		
 		JLabel publisherLabel = new JLabel("Publisher:");
 		publisherField = new JTextField();
@@ -193,6 +207,8 @@ public class LibrarianTabPanel extends UserTabPanel {
 		String isbn = isbnField.getText();
 		String title = titleField.getText();
 		String author = authorField.getText();
+		String authors = authorsField.getText();
+		String subjects = subjectsField.getText();
 		String publisher = publisherField.getText();
 		String publishedYear = publishedYearField.getText();
 		
@@ -203,7 +219,7 @@ public class LibrarianTabPanel extends UserTabPanel {
 			return false;
 		}
 	
-		String result = LibrarySQLUtil.addBook(callNumber, isbn, title, author, publisher, publishedYear);
+		String result = LibrarySQLUtil.addBook(callNumber, isbn, title, author, authors, subjects, publisher, publishedYear);
 		if (result.contains(LibrarySQLUtil.SUCCESS_STRING)) {
 			JOptionPane.showMessageDialog(this, result);
 			
@@ -211,6 +227,8 @@ public class LibrarianTabPanel extends UserTabPanel {
 			isbnField.setText("");
 			titleField.setText("");
 			authorField.setText("");
+			authorsField.setText("");
+			subjectsField.setText("");
 			publisherField.setText("");
 			publishedYearField.setText("");
 			

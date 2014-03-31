@@ -517,7 +517,7 @@ public class LibrarySQLUtil {
 	}
 	
 	public static String addBook(String callNumber, String isbn, String title,
-                                 String author, String publisher, String publishedYear) {
+                                 String author, String authors, String subjects, String publisher, String publishedYear) {
         
 		try {
 			PreparedStatement ps = conn.prepareStatement("INSERT INTO book VALUES (?,?,?,?,?,?)");
@@ -539,6 +539,61 @@ public class LibrarySQLUtil {
 				return "SQLException on rollback: " + e1.getMessage();
 			}
 		}
+		
+		if (!subjects.isEmpty()) {
+			
+			String[] subjectsArray = subjects.split(",");
+			
+			try {
+				PreparedStatement ps = conn.prepareStatement("INSERT INTO hasSubject VALUES (?,?)");
+				
+				for (String subject : subjectsArray) {
+					ps.setString(1, callNumber);
+					ps.setString(2, subject.trim());
+					ps.addBatch();
+				}
+				ps.executeBatch();
+			    conn.commit();
+				ps.close();
+				
+			} catch (SQLException e) {
+				try {
+					conn.rollback();
+					return "SQLException: " + e.getMessage();
+				} catch (SQLException e1) {
+					return "SQLException on rollback: " + e1.getMessage();
+				}
+			}
+		}
+		
+		if (!authors.isEmpty()) {
+			String[] authorsArray = authors.split(",");
+			
+			try {
+				PreparedStatement ps = conn.prepareStatement("INSERT INTO hasAuthor VALUES (?,?)");
+				
+				for (String aauthor : authorsArray) {
+					ps.setString(1, callNumber);
+					ps.setString(2, aauthor.trim());
+					ps.addBatch();
+				}
+				ps.executeBatch();
+			    conn.commit();
+				ps.close();
+				
+			} catch (SQLException e) {
+				try {
+					conn.rollback();
+					return "SQLException: " + e.getMessage();
+				} catch (SQLException e1) {
+					return "SQLException on rollback: " + e1.getMessage();
+				}
+			}
+		}
+			
+			
+		
+		
 		return SUCCESS_STRING + "New book " +  "added.";
 		
 	}
