@@ -26,7 +26,7 @@ public abstract class UserTabPanel extends JPanel implements ActionListener {
 	protected static Dimension DEFAULT_TEXT_SIZE = new Dimension(30, 10);
 	
     private JPanel cards;
-    private JComboBox<String> comboBox;
+    protected JComboBox<String> comboBox;
      
     public UserTabPanel() {
     	this.setLayout(new BorderLayout());
@@ -63,7 +63,9 @@ public abstract class UserTabPanel extends JPanel implements ActionListener {
 		
 		if (data.length != 0) {
 			Dimension d = this.getToolkit().getScreenSize();
-
+			
+			frame.getContentPane().removeAll();
+			
 			JTable table = new JTable(data, header) {
 				
 				@Override

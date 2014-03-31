@@ -4,6 +4,8 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -194,6 +196,15 @@ public class ClerkTabPanel extends UserTabPanel {
 		
 		checkOverdueItemsPanel = new JPanel(new BorderLayout());
 		checkOverdueItemsPanel.setBorder(new EmptyBorder(10, 10, 10, 10));
+		
+		comboBox.addItemListener(new ItemListener() {
+			
+			@Override
+			public void itemStateChanged(ItemEvent e) {
+				if (((String) e.getItem()).equals("Check Overdue Items"))
+					updateOverdueItems();
+			}
+		});
 		
 		updateOverdueItems();
 		
@@ -454,11 +465,14 @@ public class ClerkTabPanel extends UserTabPanel {
 				msgBuilder.append(nameList.get(i)).append(", ");
 			}
 			
-			if (nameList.size() <= 2) {
+			if (nameList.size() == 2) {
 				msgBuilder.setLength(msgBuilder.length()-2);
 			}
 			
-			msgBuilder.append(" and ").append(nameList.get(nameList.size()-1)).append(",");
+			if (nameList.size() != 1) {
+				msgBuilder.append(" and ");
+			}
+			msgBuilder.append(nameList.get(nameList.size()-1)).append(",");
 			
 			msgBuilder.append("\n\n");
 			msgBuilder.append("You have the following overdue items: ");
