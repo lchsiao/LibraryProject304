@@ -64,7 +64,7 @@ public class LibrarySQLUtil {
 	}
     
 	public static String addBorrower(String name, String password, String address, String phone, String email, String sinOrStdNo, String type) {
-		//TODO
+
 		Date today = new java.util.Date();
 		try {
 			PreparedStatement ps = conn.prepareStatement("INSERT INTO borrower (bid,bPass,bName,address,phone,emailAddress,sinOrStNo,expiryDate,bType) "
@@ -96,7 +96,7 @@ public class LibrarySQLUtil {
     
     
 	public static String checkOutItems(String bid, List<String> items) {
-		//TODO
+	
 		String result = new String();
 		ResultSet rs = null;
 	    String borrowerType;
@@ -215,9 +215,6 @@ public class LibrarySQLUtil {
 	}
     
 	public static String processReturn(String callNum, int copyNum) {
-		// TODO method should mark item as "in", assess fine if item is overdue
-		// if item is on hold request by another borrower, a message is sent to that borrower
-		// return SUCCESS_STRING + "Item checked in."
 		int borID;
 		String bid, borrowerType;
 		Date borrowedDate, dueDate;
@@ -296,14 +293,13 @@ public class LibrarySQLUtil {
 				ps4.close();
 			}
 		} catch (SQLException e) {
-			// TODO Auto-generated catch block
 			return "Error.";
 		}
 		return "Successfully returned.";
 	}
     
 	public static List<List<String[]>> checkAcct(String bid) {
-		// TODO Auto-generated method stub
+
 		List<List<String[]>> result = new ArrayList<List<String[]>>();
 		List<String[]> borrows = new ArrayList<String[]>(), fines = new ArrayList<String[]>(), holds = new ArrayList<String[]>();
 		String title, borrowerType, dueDate, fineAmount, callNum, copyNum;
@@ -361,14 +357,13 @@ public class LibrarySQLUtil {
 			result.add(fines);
 			result.add(holds);
 		} catch (SQLException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		return result;
 	}
     
 	public static String holdRequest(String bid, String callNumber) {
-		// TODO Auto-generated method stub
+
 		Date today = new java.util.Date();
 		try {
 			PreparedStatement ps = conn.prepareStatement("SELECT * FROM bookCopy WHERE callNumber=? AND copyStatus='in'");
@@ -410,14 +405,13 @@ public class LibrarySQLUtil {
 			ps4.close();
 			conn.commit();
 		} catch (SQLException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		return "Hold request for item " + callNumber + " was successful.";
 	}
     
 	public static String payFines(int borid, int amount) {
-		// TODO Auto-generated method stub
+
 		try {
 			int moneyOwed;
 			PreparedStatement ps = conn.prepareStatement("SELECT amount FROM fine WHERE borid=?");
@@ -444,14 +438,13 @@ public class LibrarySQLUtil {
 			ps3.close();
 			conn.commit();
 		} catch (SQLException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		return "Thank you for your payment. Please pay the remainder of the fine soon.";
 	}
 	
 	public static List<String[]> getOverdueItems() {
-		// TODO Auto-generated method stub
+
 		List<String[]> result = new ArrayList<String[]>();
 		String borrowerType, email, callNum, title, borrowerName;
 		Date dueDate;
@@ -477,7 +470,6 @@ public class LibrarySQLUtil {
 			rs.close();
 			ps.close();
 		} catch (SQLException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		
@@ -486,7 +478,7 @@ public class LibrarySQLUtil {
 	
 	public static String addBook(String callNumber, String isbn, String title,
                                  String author, String publisher, String publishedYear) {
-		// TODO Auto-generated method stub
+
 		try {
 			PreparedStatement ps = conn.prepareStatement("INSERT INTO book VALUES (?,?,?,?,?,?)");
 			
@@ -520,7 +512,7 @@ public class LibrarySQLUtil {
      **/
 	
 	public static List<String[]> generateBookReport(String subject) {
-		// TODO Auto-generated method stub
+
 		List<String[]> result = new ArrayList<String[]>();
 		Date outDate, dateDue, today = new java.util.Date();
 		String callNum, copyNum, title, checkOut, dueDate, overdue = "false", borrowerType;
@@ -552,7 +544,6 @@ public class LibrarySQLUtil {
 				result.add(book);
 			}
 		} catch (SQLException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		
@@ -560,7 +551,6 @@ public class LibrarySQLUtil {
 	}
     
 	public static List<String[]> listMostPopularItems(String year, int n) {
-		// TODO Auto-generated method stub
 		String title, author, callNum;
 		int count, i = 0;
 		List<String[]> result = new ArrayList<String[]>();
@@ -582,7 +572,6 @@ public class LibrarySQLUtil {
 				result.add(item);
 			}
 		} catch (SQLException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		return result;
