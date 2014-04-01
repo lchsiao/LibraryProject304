@@ -12,24 +12,24 @@ import java.util.Date;
 import java.util.List;
 
 public class LibrarySQLUtil {
-    
+
 	// db fields
 	private static final String CONNECT_URL = "jdbc:oracle:thin:@dbhost.ugrad.cs.ubc.ca:1522:ug";
 	private static final String USER = "ora_d5l8";
 	private static final String PASSWORD = "a52632056";
-    
+
 	private static Connection conn;
-	
+
 	// command strings
 	public static final String SUCCESS_STRING = "Success. ";
-	
+
 	static {
 		loadDriver();
 		conn = getConnection();
 	}
-	
+
 	private LibrarySQLUtil(){}
-	
+
 	public static void loadDriver() {
 		try
 		{
@@ -41,9 +41,9 @@ public class LibrarySQLUtil {
 			System.out.println("Message: " + ex.getMessage());
 			System.exit(-1);
 		}
-        
+
 	}
-    
+
 	private static Connection getConnection()
 	{
 		try {
@@ -51,7 +51,7 @@ public class LibrarySQLUtil {
 				System.out.println("\nRetreiving existing connection");
 				return conn;
 			}
-            
+
 			conn = DriverManager.getConnection(CONNECT_URL, USER, PASSWORD);
 			System.out.println("\nNew connection established");
 			return conn;
@@ -61,16 +61,16 @@ public class LibrarySQLUtil {
 			System.out.println("Message: " + ex.getMessage());
 			ex.printStackTrace();
 		}
-		
+
 		return null;
 	}
-    
+
 	public static String addBorrower(String name, String password, String address, String phone, String email, String sinOrStdNo, String type) {
 
 		Date today = new java.util.Date();
 		try {
 			PreparedStatement ps = conn.prepareStatement("INSERT INTO borrower (bid,bPass,bName,address,phone,emailAddress,sinOrStNo,expiryDate,bType) "
-                                                         + "VALUES (seq_borrower.nextval,?,?,?,?,?,?,?,?)");
+					+ "VALUES (seq_borrower.nextval,?,?,?,?,?,?,?,?)");
 			ps.setString(1, password);
 			ps.setString(2, name);
 			ps.setString(3, address);
@@ -83,7 +83,7 @@ public class LibrarySQLUtil {
 			ps.setDate(7, new java.sql.Date(cal.getTime().getTime()));
 			ps.setString(8, type);
 			ps.execute();
-		    conn.commit();
+			conn.commit();
 			ps.close();
 		} catch (SQLException e) {
 			try {
@@ -94,15 +94,15 @@ public class LibrarySQLUtil {
 			}
 		}
 		return SUCCESS_STRING + "New borrower " +  "added.";
-    }
-    
-    // checks out the items provided by the list parameter 
+	}
+
+	// checks out the items provided by the list parameter 
 	public static String checkOutItems(String bid, List<String> items) {
-        
+
 		String result = "";
 		ResultSet rs = null;
-	    String borrowerType;
-	    Date today = new java.util.Date();
+		String borrowerType;
+		Date today = new java.util.Date();
 		try {
 			PreparedStatement p = conn.prepareStatement("SELECT bid,bType FROM borrower WHERE bid=?");
 			p.setString(1, bid);
@@ -134,37 +134,37 @@ public class LibrarySQLUtil {
 					"((SELECT a.callNumber, copyNo, title FROM book a,bookcopy b WHERE a.callNumber=b.callNumber AND a.callNumber=?" +
 					" AND (copyStatus='in' OR copyStatus='on-hold') ORDER BY copyStatus DESC) c LEFT JOIN holdrequest d ON c.callnumber=d.callnumber AND d.bid=? AND flag='true')");
 			PreparedStatement ps2 = conn.prepareStatement("UPDATE bookCopy"
-														+ " SET copyStatus='out'"
-														+ " WHERE callNumber=? AND copyNo=?");
+					+ " SET copyStatus='out'"
+					+ " WHERE callNumber=? AND copyNo=?");
 			PreparedStatement ps3 = conn.prepareStatement("INSERT INTO borrowing (borid,bid,callNumber,copyNo,outDate,inDate)"
-														+ " VALUES (seq_borrowing.nextval,?,?,?,?,?)");
+					+ " VALUES (seq_borrowing.nextval,?,?,?,?,?)");
 			PreparedStatement ps4 = conn.prepareStatement("DELETE FROM holdrequest WHERE hid=?");
-			
+
 			List<String> hidsToDelete = new ArrayList<String>();
-			
+
 			for (int i = 0; i < items.size(); i++) {
 				ps.setString(1,items.get(i));
 				ps.setString(2, bid);
 				rs = ps.executeQuery();
-				
+
 				if (rs.next()) {
-					
+
 					// check if on-hold
 					String hid = rs.getString(4);
 					if (hid != null && !hid.isEmpty())
 						hidsToDelete.add(hid);
-					
+
 					ps2.setString(1, rs.getString(1));
 					ps2.setInt(2, rs.getInt(2));
 					ps2.executeUpdate();
-					
+
 					ps3.setString(1, bid);
 					ps3.setString(2, rs.getString(1));
 					ps3.setInt(3, rs.getInt(2));
 					ps3.setDate(4, new java.sql.Date(today.getTime()));
 					ps3.setDate(5, null);
 					ps3.executeUpdate();
-					
+
 					result = result + "Successfully checked out " + rs.getString(3) + ". Due on " + getDueDate(today, borrowerType) + "\r\n";
 				}
 			}
@@ -174,16 +174,16 @@ public class LibrarySQLUtil {
 			ps.close();
 			ps2.close();
 			ps3.close();
-			
+
 			// delete hold requests
 			for (String hid : hidsToDelete) {
 				ps4.setString(1, hid);
 				ps4.addBatch();
-			
+
 			}
 			ps4.executeBatch();
 			ps4.close();
-			
+
 		} catch (SQLException e) {
 			try {
 				conn.rollback();
@@ -192,13 +192,13 @@ public class LibrarySQLUtil {
 				return e1.getMessage();
 			}
 		}
-		
+
 		if (result.isEmpty()) {
 			return "All of the bookz you have selected are out or on-hold.";
 		}
 		return SUCCESS_STRING + "Here are the bookz you have checked out:\r\n" + result;
 	}
-    
+
 	// find the books that match the title, author, and/or subject parameters
 	public static List<String[]> searchBooks(String title, String author, String subject) {
 		String tempCallNumber, tempTitle, tempStatus;
@@ -206,44 +206,44 @@ public class LibrarySQLUtil {
 		List<String[]> result = new ArrayList<String[]>();
 		try {
 			PreparedStatement ps = conn.prepareStatement("SELECT book.callNumber,title "
-                                                         + "FROM book,hasAuthor,hasSubject "
-                                                         + "WHERE book.callNumber=hasAuthor.callNumber AND book.callNumber=hasSubject.callNumber "
-                                                         + "AND (title LIKE ? OR aName=? OR bookSubject=?)");
+					+ "FROM book,hasAuthor,hasSubject "
+					+ "WHERE book.callNumber=hasAuthor.callNumber AND book.callNumber=hasSubject.callNumber "
+					+ "AND (title LIKE ? OR aName=? OR bookSubject=?)");
 			PreparedStatement ps2 = conn.prepareStatement("SELECT copyStatus,COUNT(*) "
-                                                          + "FROM bookCopy "
-                                                          + "WHERE callNumber=? "
-                                                          + "GROUP BY copyStatus ORDER BY copyStatus");
-			
+					+ "FROM bookCopy "
+					+ "WHERE callNumber=? "
+					+ "GROUP BY copyStatus ORDER BY copyStatus");
+
 			ps.setString(1, "%" + title + "%");
 			ps.setString(2, author);
 			ps.setString(3, subject);
 			ResultSet rs = ps.executeQuery(), rs2 = null;
-			
+
 			while (rs.next()) {
-                numIn = 0;
-                numOut = 0;
-                numOnHold = 0;
+				numIn = 0;
+				numOut = 0;
+				numOnHold = 0;
 				tempCallNumber = rs.getString(1);
 				tempTitle = rs.getString(2);
 				ps2.setString(1, tempCallNumber);
 				rs2 = ps2.executeQuery();
 				while (rs2.next()) {
-                    tempStatus = rs2.getString(1);
-                    if (tempStatus.equals("in")) {
-                        numIn = rs2.getInt(2);
-                    }
-                    if (tempStatus.equals("out")) {
-                        numOut = rs2.getInt(2);
-                    }
-                    if (tempStatus.equals("on-hold")) {
-                        numOnHold = rs2.getInt(2);
-                    }
-                }
-                String[] array = {tempTitle, tempCallNumber, Integer.toString(numIn), Integer.toString(numOut), Integer.toString(numOnHold)};
-                result.add(array);
+					tempStatus = rs2.getString(1);
+					if (tempStatus.equals("in")) {
+						numIn = rs2.getInt(2);
+					}
+					if (tempStatus.equals("out")) {
+						numOut = rs2.getInt(2);
+					}
+					if (tempStatus.equals("on-hold")) {
+						numOnHold = rs2.getInt(2);
+					}
+				}
+				String[] array = {tempTitle, tempCallNumber, Integer.toString(numIn), Integer.toString(numOut), Integer.toString(numOnHold)};
+				result.add(array);
 			}
 			ps.close();
-		    rs.close();
+			rs.close();
 			ps2.close();
 			if (rs2 != null)
 				rs2.close();
@@ -257,7 +257,7 @@ public class LibrarySQLUtil {
 		}
 		return result;
 	}
-    
+
 	// return the book with callNumber and copyNo that matchs the callNum and copyNum parameters
 	public static String processReturn(String callNum, int copyNum) {
 		int borID;
@@ -274,9 +274,9 @@ public class LibrarySQLUtil {
 			PreparedStatement ps5a = conn.prepareStatement("UPDATE holdRequest C SET flag='true' WHERE C.hid=(SELECT MIN(H.hid) from holdRequest H WHERE callNumber=? AND flag='false')");
 			PreparedStatement ps7 = conn.prepareStatement("SELECT bType FROM borrower WHERE bid=?");
 			PreparedStatement ps8 = conn.prepareStatement("INSERT INTO fine (fid,amount,issuedDate,paidDate,borid)"
-                                                          + "VALUES (seq_fine.nextval,?,?,?,?)");
+					+ "VALUES (seq_fine.nextval,?,?,?,?)");
 			PreparedStatement ps9 = conn.prepareStatement("Select title FROM book WHERE callNumber=?");
-		
+
 			ps.setString(1, callNum);
 			ps.setInt(2, copyNum);
 			ResultSet rs = ps.executeQuery();
@@ -288,7 +288,7 @@ public class LibrarySQLUtil {
 			borrowedDate = rs.getDate(3);
 			ps.close();
 			rs.close();
-			
+
 			ps7.setString(1, bid);
 			ResultSet rs7 = ps7.executeQuery();
 			rs7.next();
@@ -306,26 +306,26 @@ public class LibrarySQLUtil {
 				ps8.executeUpdate();
 				ps8.close();
 			}
-			
+
 			ps2.setDate(1, new java.sql.Date(today.getTime()));
 			ps2.setInt(2, borID);
 			ps2.executeUpdate();
 			ps2.close();
-			
+
 			ps3.setString(1, callNum);
 			ResultSet rs3 = ps3.executeQuery();
 			if (rs3.next()) {
 				PreparedStatement ps6 = conn.prepareStatement("SELECT bName,emailAddress FROM borrower WHERE bid=?");
 				ps6.setString(1, rs3.getString(1));
 				ResultSet rs6 = ps6.executeQuery();
-				
+
 				if (rs6.next()) {
 					String name = rs6.getString(1);
 					String email = rs6.getString(2);
-					
+
 					rs6.close();
 					ps6.close();
-					
+
 					ps5.setString(1, callNum);
 					ps5.setInt(2, copyNum);
 					ps5a.setString(1, callNum);
@@ -334,7 +334,7 @@ public class LibrarySQLUtil {
 					ps5.close();
 					ps5a.close();
 					conn.commit();
-					
+
 					ps9.setString(1, callNum);
 					ResultSet rs9 = ps9.executeQuery();
 					String bookTitle = "";
@@ -343,10 +343,10 @@ public class LibrarySQLUtil {
 					}
 					rs9.close();
 					ps9.close();
-					
+
 					StringBuilder result = new StringBuilder(SUCCESS_STRING);
 					result.append(" ").append(name).append(" notified by email at ").append(email)
-						.append(" for ").append(bookTitle).append("(").append(callNum).append(")");
+					.append(" for ").append(bookTitle).append("(").append(callNum).append(")");
 					return result.toString();
 				}
 			} else {
@@ -362,10 +362,10 @@ public class LibrarySQLUtil {
 		}
 		return SUCCESS_STRING;
 	}
-    
+
 	// display information of the borrower with this bid
 	public static List<List<String[]>> checkAcct(String bid) {
-        
+
 		List<List<String[]>> result = new ArrayList<List<String[]>>();
 		List<String[]> borrows = new ArrayList<String[]>(), fines = new ArrayList<String[]>(), holds = new ArrayList<String[]>();
 		String title, borrowerType, dueDate, fineAmount, callNum, copyNum;
@@ -376,16 +376,16 @@ public class LibrarySQLUtil {
 			if (!r.next())
 				return null;
 			borrowerType = r.getString(1);
-			
+
 			PreparedStatement ps = conn.prepareStatement("SELECT title,borrowing.callNumber,copyNo,outDate"
-														 + " FROM borrowing,book "
-                                                         + " WHERE book.callNumber=borrowing.callNumber AND bid=? AND inDate IS NULL");
+					+ " FROM borrowing,book "
+					+ " WHERE book.callNumber=borrowing.callNumber AND bid=? AND inDate IS NULL");
 			PreparedStatement ps2 = conn.prepareStatement("SELECT amount,borrowing.callNumber,title"
-                                                          + " FROM fine,borrowing,book"
-                                                          + " WHERE fine.borid=borrowing.borid AND borrowing.callNumber=book.callNumber AND bid=?");
+					+ " FROM fine,borrowing,book"
+					+ " WHERE fine.borid=borrowing.borid AND borrowing.callNumber=book.callNumber AND bid=?");
 			PreparedStatement ps3 = conn.prepareStatement("SELECT book.callNumber,title"
-                                                          + " FROM holdRequest,book"
-                                                          + " WHERE holdRequest.callNumber = book.callNumber AND bid=?");
+					+ " FROM holdRequest,book"
+					+ " WHERE holdRequest.callNumber = book.callNumber AND bid=?");
 			ps.setString(1, bid);
 			ResultSet rs = ps.executeQuery();
 			while (rs.next()) {
@@ -428,10 +428,10 @@ public class LibrarySQLUtil {
 		}
 		return result;
 	}
-    
+
 	// add a new hold request
 	public static String holdRequest(String bid, String callNumber) {
-        
+
 		Date today = new java.util.Date();
 		try {
 			PreparedStatement ps = conn.prepareStatement("SELECT * FROM bookCopy WHERE callNumber=? AND copyStatus='in'");
@@ -444,12 +444,12 @@ public class LibrarySQLUtil {
 			}
 			rs.close();
 			ps.close();
-			
+
 			int tempCopyNo;
 			PreparedStatement ps2 = conn.prepareStatement("SELECT copyNo FROM bookCopy WHERE callNumber=? and copyStatus='out'");
 			PreparedStatement ps3 = conn.prepareStatement("INSERT INTO holdRequest (hid,bid,callNumber,issuedDate,flag) VALUES (seq_holdRequest.nextval,?,?,?,?)");
 			PreparedStatement ps4 = conn.prepareStatement("UPDATE bookCopy SET copyStatus='on-hold' WHERE callNumber=? AND copyNo=?");
-			
+
 			ps2.setString(1, callNumber);
 			ResultSet rs2 = ps2.executeQuery();
 			if (!rs2.next()) {
@@ -460,14 +460,14 @@ public class LibrarySQLUtil {
 			tempCopyNo = rs2.getInt(1);
 			rs2.close();
 			ps2.close();
-			
+
 			ps3.setString(1, bid);
 			ps3.setString(2, callNumber);
 			ps3.setDate(3, new java.sql.Date(today.getTime()));
 			ps3.setString(4, "false");
 			ps3.executeUpdate();
 			ps3.close();
-			
+
 			ps4.setString(1, callNumber);
 			ps4.setInt(2, tempCopyNo);
 			ps4.executeUpdate();
@@ -478,10 +478,10 @@ public class LibrarySQLUtil {
 		}
 		return "Hold request for item " + callNumber + " was successful.";
 	}
-    
+
 	// pay a fine that resulted from a particular borrowing instance
 	public static String payFines(int borid, int amount) {
-        try {
+		try {
 			int moneyOwed;
 			PreparedStatement ps = conn.prepareStatement("SELECT amount FROM fine WHERE borid=?");
 			ps.setInt(1, borid);
@@ -511,19 +511,19 @@ public class LibrarySQLUtil {
 		}
 		return "Thank you for your payment. Please pay the remainder of the fine soon.";
 	}
-	
+
 	// display overdue items
 	public static List<String[]> getOverdueItems() {
-        
+
 		List<String[]> result = new ArrayList<String[]>();
 		String borrowerType, email, callNum, title, borrowerName;
 		Date dueDate;
 		Date today = new java.util.Date();
 		try {
 			PreparedStatement ps = conn.prepareStatement("SELECT book.callNumber,bName,bType,emailAddress,outDate,title"
-                                                         + " FROM borrowing,borrower,book"
-                                                         + " WHERE borrowing.bid=borrower.bid AND book.callNumber=borrowing.callNumber AND inDate IS NULL"
-                                                         + " ORDER BY bName");
+					+ " FROM borrowing,borrower,book"
+					+ " WHERE borrowing.bid=borrower.bid AND book.callNumber=borrowing.callNumber AND inDate IS NULL"
+					+ " ORDER BY bName");
 			ResultSet rs = ps.executeQuery();
 			while (rs.next()) {
 				borrowerType = rs.getString(3);
@@ -542,25 +542,52 @@ public class LibrarySQLUtil {
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
-		
+
 		return result;
 	}
-	
+
 	// add a 
 	public static String addBook(String callNumber, String isbn, String title,
-                                 String author, String authors, String subjects, String publisher, String publishedYear) {
-        try {
-			PreparedStatement ps = conn.prepareStatement("INSERT INTO book VALUES (?,?,?,?,?,?)");
-			
+			String author, String authors, String subjects, String publisher, String publishedYear) {
+
+		try {
+			int copyNumber = 0;
+			PreparedStatement ps = conn.prepareStatement("SELECT MAX(copyNo) FROM bookCopy WHERE callNumber=?");
 			ps.setString(1, callNumber);
-			ps.setString(2, isbn);
-			ps.setString(3, title);
-			ps.setString(4, author);
-			ps.setString(5, publisher);
-			ps.setInt(6, Integer.parseInt(publishedYear));
-			ps.execute();
-		    conn.commit();
-			ps.close();
+			ResultSet rs = ps.executeQuery();
+			if (rs.next()) {
+				copyNumber = rs.getInt(1);
+				if (copyNumber != 0) {
+					PreparedStatement ps1 = conn.prepareStatement("UPDATE bookCopy SET copyNo=? WHERE callNumber=?");
+					ps1.setInt(1, ++copyNumber);
+					ps1.setString(2, callNumber);
+					ps1.executeUpdate();
+					rs.close();
+					ps.close();
+					conn.commit();
+					return SUCCESS_STRING + "New book copy " +  "added.";
+				}
+			}
+
+			PreparedStatement ps2 = conn.prepareStatement("INSERT INTO book VALUES (?,?,?,?,?,?)");
+			PreparedStatement ps3 = conn.prepareStatement("INSERT INTO bookCopy VALUES(?,?,?)");
+
+			ps2.setString(1, callNumber);
+			ps2.setString(2, isbn);
+			ps2.setString(3, title);
+			ps2.setString(4, author);
+			ps2.setString(5, publisher);
+			ps2.setInt(6, Integer.parseInt(publishedYear));
+			ps2.execute();
+			
+			ps3.setString(1, callNumber);
+			ps3.setInt(2, 1);
+			ps3.setString(3, "in");
+			ps3.execute();
+			
+			conn.commit();
+			ps2.close();
+			
 		} catch (SQLException e) {
 			try {
 				conn.rollback();
@@ -569,23 +596,23 @@ public class LibrarySQLUtil {
 				return e1.getMessage();
 			}
 		}
-		
+
 		if (!subjects.isEmpty()) {
-			
+
 			String[] subjectsArray = subjects.split(",");
-			
+
 			try {
 				PreparedStatement ps = conn.prepareStatement("INSERT INTO hasSubject VALUES (?,?)");
-				
+
 				for (String subject : subjectsArray) {
 					ps.setString(1, callNumber);
 					ps.setString(2, subject.trim());
 					ps.addBatch();
 				}
 				ps.executeBatch();
-			    conn.commit();
+				conn.commit();
 				ps.close();
-				
+
 			} catch (SQLException e) {
 				try {
 					conn.rollback();
@@ -595,22 +622,22 @@ public class LibrarySQLUtil {
 				}
 			}
 		}
-		
+
 		if (!authors.isEmpty()) {
 			String[] authorsArray = authors.split(",");
-			
+
 			try {
 				PreparedStatement ps = conn.prepareStatement("INSERT INTO hasAuthor VALUES (?,?)");
-				
+
 				for (String aauthor : authorsArray) {
 					ps.setString(1, callNumber);
 					ps.setString(2, aauthor.trim());
 					ps.addBatch();
 				}
 				ps.executeBatch();
-			    conn.commit();
+				conn.commit();
 				ps.close();
-				
+
 			} catch (SQLException e) {
 				try {
 					conn.rollback();
@@ -619,46 +646,42 @@ public class LibrarySQLUtil {
 					return e1.getMessage();
 				}
 			}
-		}
-			
-			
-		
-		
+		}	
 		return SUCCESS_STRING + "New book " +  "added.";
-		
+
 	}
-    
+
 	/**
 	 * Generate a report with all the books that have been checked out.
 	 *
 	 * should return List<String[]>: Call Number, Copy Num, Title, CheckOut Date, Due Date, Overdue Y/N?
 	 * should be ordered by Call Number
 	 * if Subject field is not empty, generate checkOut books pertaining to the subject
-     **/
-	
+	 **/
+
 	public static List<String[]> generateBookReport(String subject) {
-        
+
 		List<String[]> result = new ArrayList<String[]>();
 		Date outDate, dateDue, today = new java.util.Date();
 		String callNum, copyNum, title, checkOut, dueDate, overdue = "N", borrowerType;
 		PreparedStatement ps;
 		try {
 			if (subject.isEmpty()) {
-                ps = conn.prepareStatement("SELECT book.callNumber,copyNo,title,outDate,bType"
-                							+ " FROM book,borrowing,borrower"
-                                            + " WHERE borrowing.callNumber=book.callNumber AND borrower.bid=borrowing.bid AND inDate IS NULL"
-                                            + " ORDER BY callNumber");
+				ps = conn.prepareStatement("SELECT book.callNumber,copyNo,title,outDate,bType"
+						+ " FROM book,borrowing,borrower"
+						+ " WHERE borrowing.callNumber=book.callNumber AND borrower.bid=borrowing.bid AND inDate IS NULL"
+						+ " ORDER BY callNumber");
 			} else {
 				ps = conn.prepareStatement("SELECT book.callNumber,copyNo,title,outDate,bType"
-											+ " FROM book,borrowing,borrower,hasSubject"
-                                            + " WHERE borrowing.callNumber=book.callNumber AND borrower.bid=borrowing.bid"
-                                            + " AND inDate IS NULL AND bookSubject=? AND hasSubject.callNumber=borrowing.callNumber"
-                                            + " ORDER BY callNumber");
-			    ps.setString(1, subject);
-                
+						+ " FROM book,borrowing,borrower,hasSubject"
+						+ " WHERE borrowing.callNumber=book.callNumber AND borrower.bid=borrowing.bid"
+						+ " AND inDate IS NULL AND bookSubject=? AND hasSubject.callNumber=borrowing.callNumber"
+						+ " ORDER BY callNumber");
+				ps.setString(1, subject);
+
 			}
 			ResultSet rs = ps.executeQuery();
-     		while (rs.next()) {
+			while (rs.next()) {
 				callNum = rs.getString(1);
 				copyNum = Integer.toString(rs.getInt(2));
 				title = rs.getString(3);
@@ -676,20 +699,20 @@ public class LibrarySQLUtil {
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
-		
+
 		return result;
 	}
-    
+
 	public static List<String[]> listMostPopularItems(String year, int n) {
 		String title, author, callNum;
 		int count, i = 0;
 		List<String[]> result = new ArrayList<String[]>();
 		try {
 			PreparedStatement ps = conn.prepareStatement("SELECT title, mainAuthor, borrowing.callNumber, COUNT(*) AS scount"
-                                                         + " FROM borrowing, book"
-                                                         + " WHERE borrowing.callNumber=book.callNumber AND TO_CHAR(outDate, 'mm/dd/yyyy') LIKE ?"
-                                                         + " GROUP BY title, mainAuthor, borrowing.callNumber"
-                                                         + " ORDER BY scount");
+					+ " FROM borrowing, book"
+					+ " WHERE borrowing.callNumber=book.callNumber AND TO_CHAR(outDate, 'mm/dd/yyyy') LIKE ?"
+					+ " GROUP BY title, mainAuthor, borrowing.callNumber"
+					+ " ORDER BY scount");
 			ps.setString(1, "%" + year + "%");
 			ResultSet rs = ps.executeQuery();
 			while (rs.next() && i < n) {
@@ -706,7 +729,7 @@ public class LibrarySQLUtil {
 		}
 		return result;
 	}
-    
+
 	private static Date getDueDate(Date borrowDate, String borrowerType) {
 		Date dueDate;
 		if (borrowerType.equals("Student")) {
