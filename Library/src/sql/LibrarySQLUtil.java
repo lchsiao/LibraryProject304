@@ -130,8 +130,8 @@ public class LibrarySQLUtil {
 			return e3.getMessage();
 		}
 		try {
-			PreparedStatement ps = conn.prepareStatement("SELECT c.callNumber,copyNo,title,hid FROM " +
-					"((SELECT a.callNumber, copyNo, title FROM book a,bookcopy b WHERE a.callNumber=b.callNumber AND a.callNumber=?" +
+			PreparedStatement ps = conn.prepareStatement("SELECT c.callNumber,copyNo,title,hid,copyStatus FROM " +
+					"((SELECT a.callNumber, copyNo, title, copyStatus FROM book a,bookcopy b WHERE a.callNumber=b.callNumber AND a.callNumber=?" +
 					" AND (copyStatus='in' OR copyStatus='on-hold') ORDER BY copyStatus DESC) c LEFT JOIN holdrequest d ON c.callnumber=d.callnumber AND d.bid=? AND flag='true')");
 			PreparedStatement ps2 = conn.prepareStatement("UPDATE bookCopy"
 														+ " SET copyStatus='out'"
@@ -147,10 +147,13 @@ public class LibrarySQLUtil {
 				ps.setString(2, bid);
 				rs = ps.executeQuery();
 				
-				if (rs.next()) {
-					
+				while (rs.next()) {
 					// check if on-hold
 					String hid = rs.getString(4);
+					String status = rs.getString(5);
+					if ((hid == null || hid.isEmpty()) && status.equals("on-hold")) {
+						continue;
+					}
 					if (hid != null && !hid.isEmpty())
 						hidsToDelete.add(hid);
 					
@@ -166,6 +169,7 @@ public class LibrarySQLUtil {
 					ps3.executeUpdate();
 					
 					result = result + "Successfully checked out " + rs.getString(3) + ". Due on " + getDueDate(today, borrowerType) + "\r\n";
+					break;
 				}
 			}
 			conn.commit();
@@ -476,7 +480,7 @@ public class LibrarySQLUtil {
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
-		return "Hold request for item " + callNumber + " was successful.";
+		return SUCCESS_STRING + "Hold request for item " + callNumber + " was successful.";
 	}
     
 	// pay a fine that resulted from a particular borrowing instance
