@@ -87,16 +87,19 @@ public class ClerkTabPanel extends UserTabPanel {
 		nameField = new JTextField();
 		addBorrowerPanelTop.add(nameLabel);
 		addBorrowerPanelTop.add(nameField);
+		nameField.setToolTipText("Required: Enter your full name to setup your icanhazbookz library account (max 30 characters).");
 
 		JLabel passwordLabel = new JLabel("Password:");
 		passwordField = new JPasswordField();
 		addBorrowerPanelTop.add(passwordLabel);
 		addBorrowerPanelTop.add(passwordField);
+		passwordField.setToolTipText("Required: Enter your password (max 20 characters).");
 
 		JLabel addressLabel = new JLabel("Address:");
 		addressField = new JTextField();
 		addBorrowerPanelTop.add(addressLabel);
 		addBorrowerPanelTop.add(addressField);
+		addressField.setToolTipText("Required: Enter your address (max 30 characters).");
 
 		JLabel phoneLabel = new JLabel("Phone:");
 		NumberFormat format = NumberFormat.getIntegerInstance();
@@ -106,22 +109,26 @@ public class ClerkTabPanel extends UserTabPanel {
 		phoneField = new JFormattedTextField(format);
 		addBorrowerPanelTop.add(phoneLabel);
 		addBorrowerPanelTop.add(phoneField);
+		phoneField.setToolTipText("Required: Enter your phone number.");
 
 		JLabel emailLabel = new JLabel("Email Address:");
 		emailField = new JTextField();
 		addBorrowerPanelTop.add(emailLabel);
 		addBorrowerPanelTop.add(emailField);
+		emailField.setToolTipText("Required: Enter your email address (max 30 chars). This will be the primary mode of contact from icanhazbookz library.");
 
 		JLabel sinOrStNoLabel = new JLabel("Sin or Student Number:");
 		sinOrStNoField = new JTextField();
 		addBorrowerPanelTop.add(sinOrStNoLabel);
 		addBorrowerPanelTop.add(sinOrStNoField);
+		sinOrStNoField.setToolTipText("Required: Enter your Student Number if you are a university student, otherwise supply your SIN.");
 
 		JLabel typeLabel = new JLabel("Type:");
 		String[] types = {"Student", "Faculty", "Staff"};
 		typeField = new JComboBox<String>(types);
 		addBorrowerPanelTop.add(typeLabel);
 		addBorrowerPanelTop.add(typeField);
+		typeField.setToolTipText("Select appropriate Borrower Type.");
 
 		addBorrowerPanel.add(addBorrowerPanelTop, BorderLayout.PAGE_START);
 
@@ -147,6 +154,7 @@ public class ClerkTabPanel extends UserTabPanel {
 		checkOutItemsPanelTop.add(bidLabel);
 		checkOutItemsPanelTop.add(bidField);
 		checkOutItemsPanelTop.add(Box.createHorizontalGlue());
+		bidField.setToolTipText("Required: Enter the borrower's card number.");
 
 		JButton itemsButton = new JButton("Add Item");
 		itemsButton.addActionListener(this);
@@ -154,7 +162,7 @@ public class ClerkTabPanel extends UserTabPanel {
 		itemsField = new LinkedList<JTextField>();
 		checkOutItemsPanelTop.add(itemsButton);
 		JTextField firstItem = new JTextField();
-		firstItem.setToolTipText("Enter in the call number of the book to check out.");
+		firstItem.setToolTipText("Required: Enter the call number of the book to check out.");
 		itemsField.add(firstItem);
 		checkOutItemsPanelTop.add(firstItem);
 		checkOutItemsPanelTop.add(Box.createHorizontalGlue());
@@ -182,11 +190,13 @@ public class ClerkTabPanel extends UserTabPanel {
 		returnIDField = new JTextField();
 		processReturnPanelTop.add(returnIDLabel);
 		processReturnPanelTop.add(returnIDField);
+		returnIDField.setToolTipText("Required: Enter the call number of the book that is being returned.");
 		
 		JLabel copyLabel = new JLabel("Copy Number:");
 		copyNumberField = new JTextField();
 		processReturnPanelTop.add(copyLabel);
 		processReturnPanelTop.add(copyNumberField);
+		copyNumberField.setToolTipText("Required: Enter the book's copy number that is being returned.");
 
 		processReturnPanel.add(processReturnPanelTop, BorderLayout.PAGE_START);
 
