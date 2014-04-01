@@ -113,7 +113,7 @@ public abstract class UserTabPanel extends JPanel implements ActionListener {
     	cards.add(name, c);
     }
     
-	protected void sendEmail(String subject, String recipient, String msg) {
+	protected void sendEmail(String subject, String recipient, String msg, String footerImage) {
 		
 		try {
 			SimpleEmail email = new SimpleEmail();
@@ -137,7 +137,7 @@ public abstract class UserTabPanel extends JPanel implements ActionListener {
 			multipart.addBodyPart(msgPart);
 			
 			MimeBodyPart imagePart = new MimeBodyPart();
-			imagePart.setContent("<img src=\"https://i.chzbgr.com/maxW500/4155728640/h3BA62CF1/\" id=\"_r_a_4155728640\" height=\"190\" width=\"175\">", "text/html");
+			imagePart.setContent("<img src=\"" + footerImage + "\" height=\"190\" width=\"190\">", "text/html");
 
 			multipart.addBodyPart(imagePart);
 			

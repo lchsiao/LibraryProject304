@@ -378,7 +378,10 @@ public class ClerkTabPanel extends UserTabPanel {
 			
 			StringBuilder msgBuilder = new StringBuilder("Hello ").append(name).append(",\n\n");
 			msgBuilder.append("Your held item: ").append(bookString).append(" is now ready for pick-up.");
-			sendEmail("Held Item Ready for Pick-up", email, msgBuilder.toString());
+			
+			String footerImage = "http://i62.tinypic.com/289ikxg.jpg";
+			
+			sendEmail("Held Item Ready for Pick-up", email, msgBuilder.toString(), footerImage);
 			
 			JOptionPane.showMessageDialog(this, result);
 		} else {
@@ -510,7 +513,9 @@ public class ClerkTabPanel extends UserTabPanel {
 			msgBuilder.append("\n\n");
 			msgBuilder.append("Please return them immediately.");
 			
-			sendEmail("Overdue Library Items", emailString, msgBuilder.toString());
+			String footerImage = "http://i58.tinypic.com/35moe41.jpg";
+			
+			sendEmail("Overdue Library Items", emailString, msgBuilder.toString(), footerImage);
 		}
 		
 		JOptionPane.showMessageDialog(this, "Emails sent to " + emailToBookMap);
