@@ -491,7 +491,7 @@ public class ClerkTabPanel extends UserTabPanel {
 				for (int i = 0; i < nameList.size()-1; i++) {
 					msgBuilder.append(nameList.get(i).trim()).append(", ");
 				}
-				msgBuilder.append(" and ").append(nameList.get(nameList.size()-1).trim()).append(",");
+				msgBuilder.append("and ").append(nameList.get(nameList.size()-1).trim()).append(",");
 			}
 			
 			if (nameList.size() == 1) {
