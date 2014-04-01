@@ -602,9 +602,9 @@ public class LibrarySQLUtil {
 			ps3.close();
 			conn.commit();
 		} catch (SQLException e) {
-			e.printStackTrace();
+			return e.getMessage();
 		}
-		return "Thank you for your payment. Please pay the remainder of the fine soon.";
+		return SUCCESS_STRING + "Thank you for your payment. Please pay the remainder of the fine soon.";
 	}
 
 	/**
