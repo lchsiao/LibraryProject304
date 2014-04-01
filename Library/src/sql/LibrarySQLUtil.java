@@ -121,7 +121,7 @@ public class LibrarySQLUtil {
 				return e1.getMessage();
 			}
 		}
-		return SUCCESS_STRING + "New borrower with bid " + bid + " added.";
+		return SUCCESS_STRING + "New borrower with Borrower ID " + bid + " added.";
 	}
 
 	/**
