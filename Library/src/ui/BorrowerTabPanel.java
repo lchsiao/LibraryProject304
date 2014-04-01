@@ -6,6 +6,7 @@ import java.awt.event.ActionEvent;
 import java.util.List;
 
 import javax.swing.JButton;
+import javax.swing.JFormattedTextField;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -119,7 +120,7 @@ public class BorrowerTabPanel extends UserTabPanel {
 		createCheckAccountPanelTop.setBorder(new EmptyBorder(10, 10, 10, 10));
 
 		JLabel bidLabel = new JLabel("Card Number:");
-		checkAcctBidField = new JTextField();
+		checkAcctBidField = new JFormattedTextField(idFormat);
 		createCheckAccountPanelTop.add(bidLabel);
 		createCheckAccountPanelTop.add(checkAcctBidField);
 
@@ -153,7 +154,7 @@ public class BorrowerTabPanel extends UserTabPanel {
 		createRequestHoldPanelTop.setBorder(new EmptyBorder(10, 10, 10, 10));
 
 		JLabel bidLabel = new JLabel("Card Number:");
-		requestHoldBidField = new JTextField();
+		requestHoldBidField = new JFormattedTextField(idFormat);
 		createRequestHoldPanelTop.add(bidLabel);
 		createRequestHoldPanelTop.add(requestHoldBidField);
 		
@@ -184,12 +185,12 @@ public class BorrowerTabPanel extends UserTabPanel {
 		createPayFinesPanelTop.setBorder(new EmptyBorder(10, 10, 10, 10));
 
 		JLabel boridLabel = new JLabel("Borrow Reference:");
-		boridField = new JTextField();
+		boridField = new JFormattedTextField(idFormat);
 		createPayFinesPanelTop.add(boridLabel);
 		createPayFinesPanelTop.add(boridField);
 		
 		JLabel amountLabel = new JLabel("Amount:");
-		amountField = new JTextField();
+		amountField = new JFormattedTextField(currencyFormat);
 		createPayFinesPanelTop.add(amountLabel);
 		createPayFinesPanelTop.add(amountField);
 
