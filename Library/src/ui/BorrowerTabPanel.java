@@ -3,8 +3,6 @@ package ui;
 import java.awt.BorderLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
-import java.awt.event.FocusEvent;
-import java.awt.event.FocusListener;
 import java.util.List;
 
 import javax.swing.JButton;
@@ -33,7 +31,7 @@ public class BorrowerTabPanel extends UserTabPanel {
 	// createCheckAccount fields
 	private static final String CHECK_ACCT_ACTION = "CHECKACCT";
 	private static final String[] HEADER_BORROWED_ITEMS = new String[] { "Call Number", "Title", "Copy No.", "Due Date"};
-	private static final String[] HEADER_FINES = new String[] {"Call Number", "Title", "Fine Amount"};
+	private static final String[] HEADER_FINES = new String[] {"Call Number", "Title", "Fine Amount", "Borrowing ID"};
 	private static final String[] HEADER_HELD_ITEMS = new String[] {"Call Number", "Title"}; 
 	
 	private JFrame borrowedItemsFrame;
