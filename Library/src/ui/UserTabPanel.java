@@ -8,6 +8,8 @@ import java.awt.Rectangle;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
 
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeBodyPart;
@@ -30,8 +32,18 @@ public abstract class UserTabPanel extends JPanel implements ActionListener {
 	
     private JPanel cards;
     protected JComboBox<String> comboBox;
+    
+    protected NumberFormat intFormat = NumberFormat.getIntegerInstance();
+    protected NumberFormat currencyFormat = new DecimalFormat("0.00");
+    protected NumberFormat yearFormat = NumberFormat.getIntegerInstance();
      
     public UserTabPanel() {
+    	
+    	intFormat.setGroupingUsed(false);
+    	yearFormat.setMaximumIntegerDigits(4);
+    	yearFormat.setMinimumIntegerDigits(4);
+    	yearFormat.setGroupingUsed(false);
+    	
     	this.setLayout(new BorderLayout());
     	
     	cards = new JPanel(new CardLayout());

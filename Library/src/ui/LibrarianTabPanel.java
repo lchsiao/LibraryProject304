@@ -6,6 +6,7 @@ import java.awt.event.ActionEvent;
 import java.util.List;
 
 import javax.swing.JButton;
+import javax.swing.JFormattedTextField;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -118,7 +119,7 @@ public class LibrarianTabPanel extends UserTabPanel {
 		publisherField.setToolTipText("Required: Enter the publisher for this book (max 30 characters).");
 		
 		JLabel publishedYearLabel = new JLabel("Published Year:");
-		publishedYearField = new JTextField();
+		publishedYearField = new JFormattedTextField(yearFormat);
 		createAddBookPanelTop.add(publishedYearLabel);
 		createAddBookPanelTop.add(publishedYearField);
 		publishedYearField.setToolTipText("Required: Enter the book's year of publication. This should be used as the last 4 digits for call number.");
@@ -186,13 +187,13 @@ public class LibrarianTabPanel extends UserTabPanel {
 		createListMostPopularItemsPanelTop.setBorder(new EmptyBorder(10, 10, 10, 10));
 		
 		JLabel yearLabel = new JLabel("Year:");
-		yearField = new JTextField();
+		yearField = new JFormattedTextField(yearFormat);
 		createListMostPopularItemsPanelTop.add(yearLabel);
 		createListMostPopularItemsPanelTop.add(yearField);
 		yearField.setToolTipText("Required: Enter the year in which you are interested in finding the most popular books.");
 		
 		JLabel nLabel = new JLabel("Number of top books to be displayed:");
-		nField = new JTextField();
+		nField = new JFormattedTextField(intFormat);
 		createListMostPopularItemsPanelTop.add(nLabel);
 		createListMostPopularItemsPanelTop.add(nField);
 		nField.setToolTipText("Required: Enter the number of top popular books you want to view.");

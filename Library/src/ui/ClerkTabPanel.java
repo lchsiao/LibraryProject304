@@ -150,7 +150,7 @@ public class ClerkTabPanel extends UserTabPanel {
 		checkOutItemsPanelTop.setBorder(new EmptyBorder(10, 10, 10, 10));
 
 		JLabel bidLabel = new JLabel("Card Number:");
-		bidField = new JTextField();
+		bidField = new JFormattedTextField(intFormat);
 		checkOutItemsPanelTop.add(bidLabel);
 		checkOutItemsPanelTop.add(bidField);
 		checkOutItemsPanelTop.add(Box.createHorizontalGlue());
@@ -193,7 +193,7 @@ public class ClerkTabPanel extends UserTabPanel {
 		returnIDField.setToolTipText("Required: Enter the call number of the book that is being returned.");
 		
 		JLabel copyLabel = new JLabel("Copy Number:");
-		copyNumberField = new JTextField();
+		copyNumberField = new JFormattedTextField(intFormat);
 		processReturnPanelTop.add(copyLabel);
 		processReturnPanelTop.add(copyNumberField);
 		copyNumberField.setToolTipText("Required: Enter the book's copy number that is being returned.");

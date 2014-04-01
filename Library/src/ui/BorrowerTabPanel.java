@@ -3,9 +3,12 @@ package ui;
 import java.awt.BorderLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
 import java.util.List;
 
 import javax.swing.JButton;
+import javax.swing.JFormattedTextField;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -122,7 +125,7 @@ public class BorrowerTabPanel extends UserTabPanel {
 		createCheckAccountPanelTop.setBorder(new EmptyBorder(10, 10, 10, 10));
 
 		JLabel bidLabel = new JLabel("Card Number:");
-		checkAcctBidField = new JTextField();
+		checkAcctBidField = new JFormattedTextField(intFormat);
 		createCheckAccountPanelTop.add(bidLabel);
 		createCheckAccountPanelTop.add(checkAcctBidField);
 		checkAcctBidField.setToolTipText("Required: Enter the borrower's card number.");
@@ -158,7 +161,7 @@ public class BorrowerTabPanel extends UserTabPanel {
 		createRequestHoldPanelTop.setBorder(new EmptyBorder(10, 10, 10, 10));
 
 		JLabel bidLabel = new JLabel("Card Number:");
-		requestHoldBidField = new JTextField();
+		requestHoldBidField = new JFormattedTextField(intFormat);
 		createRequestHoldPanelTop.add(bidLabel);
 		createRequestHoldPanelTop.add(requestHoldBidField);
 		requestHoldBidField.setToolTipText("Required: Enter the borrower's card number.");
@@ -191,16 +194,34 @@ public class BorrowerTabPanel extends UserTabPanel {
 		createPayFinesPanelTop.setBorder(new EmptyBorder(10, 10, 10, 10));
 
 		JLabel boridLabel = new JLabel("Borrow Reference:");
-		boridField = new JTextField();
+		boridField = new JFormattedTextField(intFormat);
 		createPayFinesPanelTop.add(boridLabel);
 		createPayFinesPanelTop.add(boridField);
 		boridField.setToolTipText("Required: Enter the borrowing reference id.");
 		
 		JLabel amountLabel = new JLabel("Amount:");
-		amountField = new JTextField();
+		amountField = new JFormattedTextField(currencyFormat);
 		createPayFinesPanelTop.add(amountLabel);
 		createPayFinesPanelTop.add(amountField);
 		amountField.setToolTipText("Required: Enter the amount that you wish to pay now.");
+		amountField.addFocusListener(new FocusListener() {
+
+			@Override
+			public void focusGained(FocusEvent e) {
+				JTextField field = (JTextField) e.getSource();
+				if (field.getText().isEmpty()) {
+					field.setText("0.00");
+				}		
+			}
+
+			@Override
+			public void focusLost(FocusEvent e) {
+				JTextField field = (JTextField) e.getSource();
+				if (field.getText().isEmpty()) {
+					field.setText("0.00");
+				}
+			}
+		});
 
 		createPayFinesPanel.add(createPayFinesPanelTop, BorderLayout.PAGE_START);
 
