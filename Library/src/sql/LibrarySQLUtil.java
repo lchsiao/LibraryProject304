@@ -240,9 +240,9 @@ public class LibrarySQLUtil {
 		}
 
 		if (result.isEmpty()) {
-			return "All of the bookz you have selected are out or on-hold.";
+			return "All of the books you have selected are out or on-hold.";
 		}
-		return SUCCESS_STRING + "Here are the bookz you have checked out:\r\n" + result;
+		return SUCCESS_STRING + "Here are the books you have checked out:\r\n" + result;
 	}
 
 	/**
@@ -260,10 +260,11 @@ public class LibrarySQLUtil {
 		int numIn, numOut, numOnHold;
 		List<String[]> result = new ArrayList<String[]>();
 		try {
-			PreparedStatement ps = conn.prepareStatement("SELECT book.callNumber,title "
+			PreparedStatement ps = conn.prepareStatement("SELECT DISTINCT book.callNumber,title "
 														+ "FROM book,hasAuthor,hasSubject "
-														+ "WHERE book.callNumber=hasAuthor.callNumber AND book.callNumber=hasSubject.callNumber "
-														+ "AND (title LIKE ? OR aName=? OR bookSubject=?)");
+													    + "WHERE book.callNumber=hasAuthor.callNumber AND book.callNumber=hasSubject.callNumber "
+													    + "AND (title LIKE ? OR aName=? OR bookSubject=?)");
+
 			PreparedStatement ps2 = conn.prepareStatement("SELECT copyStatus,COUNT(*) "
 														+ "FROM bookCopy "
 														+ "WHERE callNumber=? "
@@ -649,6 +650,7 @@ public class LibrarySQLUtil {
 		return result;
 	}
 
+
 	/**
 	 * Adds a new book or new copy of an existing book to the library.
 	 * Refer to the icanhazbookz User Manual for more specifics.
@@ -675,9 +677,10 @@ public class LibrarySQLUtil {
 			if (rs.next()) {
 				copyNumber = rs.getInt(1);
 				if (copyNumber != 0) {
-					PreparedStatement ps1 = conn.prepareStatement("UPDATE bookCopy SET copyNo=? WHERE callNumber=?");
-					ps1.setInt(1, ++copyNumber);
-					ps1.setString(2, callNumber);
+					PreparedStatement ps1 = conn.prepareStatement("INSERT INTO bookCopy VALUES (?,?,?)");
+					ps1.setString(1, callNumber);
+					ps1.setInt(2, ++copyNumber);
+					ps1.setString(3, "in");
 					ps1.executeUpdate();
 					rs.close();
 					ps.close();
@@ -687,8 +690,9 @@ public class LibrarySQLUtil {
 			}
 
 			PreparedStatement ps2 = conn.prepareStatement("INSERT INTO book VALUES (?,?,?,?,?,?)");
-			
-			PreparedStatement ps3 = conn.prepareStatement("INSERT INTO bookCopy VALUES(?,?,?)");
+
+			PreparedStatement ps3 = conn.prepareStatement("INSERT INTO bookCopy VALUES (?,?,?)");
+
 
 			ps2.setString(1, callNumber);
 			ps2.setString(2, isbn);
@@ -752,6 +756,9 @@ public class LibrarySQLUtil {
 					ps.setString(2, aauthor.trim());
 					ps.addBatch();
 				}
+				ps.setString(1, callNumber);
+				ps.setString(2, author);
+				ps.addBatch();
 				ps.executeBatch();
 				conn.commit();
 				ps.close();
@@ -842,7 +849,7 @@ public class LibrarySQLUtil {
 														+ "FROM borrowing, book "
 														+ "WHERE borrowing.callNumber=book.callNumber AND TO_CHAR(outDate, 'mm/dd/yyyy') LIKE ? "
 														+ "GROUP BY title, mainAuthor, borrowing.callNumber "
-														+ "ORDER BY scount");
+														+ "ORDER BY scount DESC");
 			ps.setString(1, "%" + year + "%");
 			ResultSet rs = ps.executeQuery();
 			while (rs.next() && i < n) {
