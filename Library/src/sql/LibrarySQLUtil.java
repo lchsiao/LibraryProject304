@@ -1,11 +1,9 @@
 package sql;
-import java.sql.Array;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -13,14 +11,14 @@ import java.util.List;
 
 public class LibrarySQLUtil {
 
-	// db fields
+	// Database fields
 	private static final String CONNECT_URL = "jdbc:oracle:thin:@dbhost.ugrad.cs.ubc.ca:1522:ug";
 	private static final String USER = "ora_d5l8";
 	private static final String PASSWORD = "a52632056";
 
 	private static Connection conn;
 
-	// command strings
+	// Command strings
 	public static final String SUCCESS_STRING = "Success. ";
 
 	static {
@@ -65,26 +63,56 @@ public class LibrarySQLUtil {
 		return null;
 	}
 
+	/**
+	 * 
+	 * Add a new borrower to the library. Refer to the icanhazbookz User Manual for more specifics.
+	 * 
+	 * @param name the name of the borrower for this borrower account
+	 * @param password the password for this borrower account
+	 * @param address the address for this borrower account
+	 * @param phone the phone number for this borrower account
+	 * @param email the email address for this borrower account. Main method of contact
+	 * @param sinOrStdNo the student number (if borrower is a student) otherwise social insurance number
+	 * @param type the Borrower Type for this borrower account
+	 * 
+	 * @return a message indicating success or failure
+	 */
 	public static String addBorrower(String name, String password, String address, String phone, String email, String sinOrStdNo, String type) {
 
 		Date today = new java.util.Date();
+		String bid = "";
 		try {
 			PreparedStatement ps = conn.prepareStatement("INSERT INTO borrower (bid,bPass,bName,address,phone,emailAddress,sinOrStNo,expiryDate,bType) "
-					+ "VALUES (seq_borrower.nextval,?,?,?,?,?,?,?,?)");
+														+ "VALUES (seq_borrower.nextval,?,?,?,?,?,?,?,?)");
 			ps.setString(1, password);
 			ps.setString(2, name);
 			ps.setString(3, address);
 			ps.setString(4, phone);
 			ps.setString(5, email);
 			ps.setString(6, sinOrStdNo);
+			
 			Calendar cal = Calendar.getInstance();
 			cal.setTime(today);
 			cal.set(Calendar.YEAR, cal.get(Calendar.YEAR) + 1);
+			
 			ps.setDate(7, new java.sql.Date(cal.getTime().getTime()));
 			ps.setString(8, type);
+			
 			ps.execute();
-			conn.commit();
 			ps.close();
+			
+			PreparedStatement ps1 = conn.prepareStatement("SELECT bid FROM borrower WHERE sinOrStNo=?");
+			
+			ps1.setString(1, sinOrStdNo);
+			ResultSet rs = ps1.executeQuery();
+			if (rs.next()) {
+				bid = Integer.toString(rs.getInt(1));
+			}
+			rs.close();
+			ps1.close();
+		
+			conn.commit();
+			
 		} catch (SQLException e) {
 			try {
 				conn.rollback();
@@ -93,10 +121,17 @@ public class LibrarySQLUtil {
 				return e1.getMessage();
 			}
 		}
-		return SUCCESS_STRING + "New borrower " +  "added.";
+		return SUCCESS_STRING + "New borrower with bid " + bid + " added.";
 	}
 
-	// checks out the items provided by the list parameter 
+	/**
+	 * Check-out items borrowed by a borrower. Refer to the icanhazbookz User Manual for more specifics.
+	 * 
+	 * @param bid the card number of borrower
+	 * @param items the list of book call numbers that borrower wants to check out
+	 * 
+	 * @return a message indicating success or failure.
+	 */
 	public static String checkOutItems(String bid, List<String> items) {
 
 		String result = "";
@@ -116,7 +151,8 @@ public class LibrarySQLUtil {
 			return e2.getMessage();
 		}
 		try {
-			PreparedStatement p2 = conn.prepareStatement("SELECT * FROM fine,borrowing WHERE bid=? AND fine.borid=borrowing.borid");
+			PreparedStatement p2 = conn.prepareStatement("SELECT * FROM fine,borrowing "
+														+ "WHERE bid=? AND fine.borid=borrowing.borid");
 			p2.setString(1, bid);
 			ResultSet r2 = p2.executeQuery();
 			if (r2.next()) {
@@ -130,14 +166,20 @@ public class LibrarySQLUtil {
 			return e3.getMessage();
 		}
 		try {
-			PreparedStatement ps = conn.prepareStatement("SELECT c.callNumber,copyNo,title,hid,copyStatus FROM " +
-					"((SELECT a.callNumber, copyNo, title, copyStatus FROM book a,bookcopy b WHERE a.callNumber=b.callNumber AND a.callNumber=?" +
-					" AND (copyStatus='in' OR copyStatus='on-hold') ORDER BY copyStatus DESC) c LEFT JOIN holdrequest d ON c.callnumber=d.callnumber AND d.bid=? AND flag='true')");
-			PreparedStatement ps2 = conn.prepareStatement("UPDATE bookCopy"
-					+ " SET copyStatus='out'"
-					+ " WHERE callNumber=? AND copyNo=?");
-			PreparedStatement ps3 = conn.prepareStatement("INSERT INTO borrowing (borid,bid,callNumber,copyNo,outDate,inDate)"
-					+ " VALUES (seq_borrowing.nextval,?,?,?,?,?)");
+			PreparedStatement ps = conn.prepareStatement("SELECT c.callNumber,copyNo,title,hid,copyStatus FROM " 
+														+"((SELECT a.callNumber, copyNo, title, copyStatus "
+															+ "FROM book a,bookcopy b "
+															+ "WHERE a.callNumber=b.callNumber AND a.callNumber=? " 
+															+ "AND (copyStatus='in' OR copyStatus='on-hold') ORDER BY copyStatus DESC) "
+														+ "c LEFT JOIN holdrequest d ON c.callnumber=d.callnumber AND d.bid=? AND flag='true')");
+			
+			PreparedStatement ps2 = conn.prepareStatement("UPDATE bookCopy "
+														+ "SET copyStatus='out' "
+														+ "WHERE callNumber=? AND copyNo=?");
+			
+			PreparedStatement ps3 = conn.prepareStatement("INSERT INTO borrowing (borid,bid,callNumber,copyNo,outDate,inDate) "
+														+ "VALUES (seq_borrowing.nextval,?,?,?,?,?)");
+			
 			PreparedStatement ps4 = conn.prepareStatement("DELETE FROM holdrequest WHERE hid=?");
 
 			List<String> hidsToDelete = new ArrayList<String>();
@@ -179,7 +221,7 @@ public class LibrarySQLUtil {
 			ps2.close();
 			ps3.close();
 
-			// delete hold requests
+			// Delete hold requests when borrower who placed the hold request checks out his held book item(s).
 			for (String hid : hidsToDelete) {
 				ps4.setString(1, hid);
 				ps4.addBatch();
@@ -203,20 +245,30 @@ public class LibrarySQLUtil {
 		return SUCCESS_STRING + "Here are the books you have checked out:\r\n" + result;
 	}
 
-	// find the books that match the title, author, and/or subject parameters
+	/**
+	 * Search the library system for books that match the title, author, and/or subject parameters
+	 * Refer to the icanhazbookz User Manual for more specifics.
+	 * 
+	 * @param title the keyword search for Book title
+	 * @param author the keyword search for Book author
+	 * @param subject the keyword search for Book subject
+	 *
+	 * @return a list of all the book specifics (title, call number, "in" copies, "out" copies, "on-hold" copies) that match the search query.  
+	 */
 	public static List<String[]> searchBooks(String title, String author, String subject) {
 		String tempCallNumber, tempTitle, tempStatus;
 		int numIn, numOut, numOnHold;
 		List<String[]> result = new ArrayList<String[]>();
 		try {
 			PreparedStatement ps = conn.prepareStatement("SELECT DISTINCT book.callNumber,title "
-					+ "FROM book,hasAuthor,hasSubject "
-					+ "WHERE book.callNumber=hasAuthor.callNumber AND book.callNumber=hasSubject.callNumber "
-					+ "AND (title LIKE ? OR aName=? OR bookSubject=?)");
+														+ "FROM book,hasAuthor,hasSubject "
+													    + "WHERE book.callNumber=hasAuthor.callNumber AND book.callNumber=hasSubject.callNumber "
+													    + "AND (title LIKE ? OR aName=? OR bookSubject=?)");
+
 			PreparedStatement ps2 = conn.prepareStatement("SELECT copyStatus,COUNT(*) "
-					+ "FROM bookCopy "
-					+ "WHERE callNumber=? "
-					+ "GROUP BY copyStatus ORDER BY copyStatus");
+														+ "FROM bookCopy "
+														+ "WHERE callNumber=? "
+														+ "GROUP BY copyStatus ORDER BY copyStatus");
 
 			ps.setString(1, "%" + title + "%");
 			ps.setString(2, author);
@@ -262,24 +314,42 @@ public class LibrarySQLUtil {
 		return result;
 	}
 
-	// return the book with callNumber and copyNo that matchs the callNum and copyNum parameters
+	/**
+	 * Processes a return. Refer to the icanhazbookz User Manual for more specifics.
+	 * 
+	 * @param callNum the call number of the book that is being returned back to the library
+	 * @param copyNum the copy number of the book that is being returned back to the library
+	 * 
+	 * @return the book with call number and copy number that matches the callNum and copyNum parameters
+	 */
 	public static String processReturn(String callNum, int copyNum) {
 		int borID;
 		String bid, borrowerType;
 		Date borrowedDate, dueDate;
 		Date today = new java.util.Date();
 		try {
-			PreparedStatement ps = conn.prepareStatement("SELECT borid,bid,outDate FROM borrowing B,bookCopy C "
-					+ "WHERE B.callNumber=? AND B.copyNo=? AND B.callNumber=C.callNumber AND B.copyNo=C.copyNo AND copyStatus='out'");
+			PreparedStatement ps = conn.prepareStatement("SELECT borid,bid,outDate "
+														+ "FROM borrowing B,bookCopy C "
+														+ "WHERE B.callNumber=? AND B.copyNo=? AND B.callNumber=C.callNumber AND B.copyNo=C.copyNo AND copyStatus='out'");
+			
 			PreparedStatement ps2 = conn.prepareStatement("UPDATE borrowing SET inDate=? WHERE borid=?");
+			
 			PreparedStatement ps3 = conn.prepareStatement("SELECT bid FROM holdRequest WHERE callNumber=? AND flag='false'");
+			
 			PreparedStatement ps4 = conn.prepareStatement("UPDATE bookCopy SET copyStatus='in' WHERE callNumber=? AND copyNo=?");
+			
 			PreparedStatement ps5 = conn.prepareStatement("UPDATE bookCopy SET copyStatus='on-hold' WHERE callNumber=? AND copyNo=?");
-			PreparedStatement ps5a = conn.prepareStatement("UPDATE holdRequest C SET flag='true' WHERE C.hid=(SELECT MIN(H.hid) from holdRequest H WHERE callNumber=? AND flag='false')");
+			
+			PreparedStatement ps5a = conn.prepareStatement("UPDATE holdRequest C SET flag='true' "
+														+ "WHERE C.hid=(SELECT MIN(H.hid) FROM holdRequest H "
+														+ "WHERE callNumber=? AND flag='false')");
+			
 			PreparedStatement ps7 = conn.prepareStatement("SELECT bType FROM borrower WHERE bid=?");
+			
 			PreparedStatement ps8 = conn.prepareStatement("INSERT INTO fine (fid,amount,issuedDate,paidDate,borid)"
-					+ "VALUES (seq_fine.nextval,?,?,?,?)");
-			PreparedStatement ps9 = conn.prepareStatement("Select title FROM book WHERE callNumber=?");
+														+ "VALUES (seq_fine.nextval,?,?,?,?)");
+			
+			PreparedStatement ps9 = conn.prepareStatement("SELECT title FROM book WHERE callNumber=?");
 
 			ps.setString(1, callNum);
 			ps.setInt(2, copyNum);
@@ -367,7 +437,14 @@ public class LibrarySQLUtil {
 		return SUCCESS_STRING;
 	}
 
-	// display information of the borrower with this bid
+	/**
+	 * Check borrower's account. Refer to the icanhazbookz User Manual for more specifics.
+	 * 
+	 * @param bid the card number of the borrower
+	 * 
+	 * @return the details of any currently check out books, any outstanding fines, 
+	 * 			any hold requests of the borrower with the supplied card number.
+	 */
 	public static List<List<String[]>> checkAcct(String bid) {
 
 		List<List<String[]>> result = new ArrayList<List<String[]>>();
@@ -382,14 +459,16 @@ public class LibrarySQLUtil {
 			borrowerType = r.getString(1);
 
 			PreparedStatement ps = conn.prepareStatement("SELECT title,borrowing.callNumber,copyNo,outDate"
-					+ " FROM borrowing,book "
-					+ " WHERE book.callNumber=borrowing.callNumber AND bid=? AND inDate IS NULL");
+														+ " FROM borrowing,book "
+														+ " WHERE book.callNumber=borrowing.callNumber AND bid=? AND inDate IS NULL");
+			
 			PreparedStatement ps2 = conn.prepareStatement("SELECT amount,borrowing.callNumber,title"
-					+ " FROM fine,borrowing,book"
-					+ " WHERE fine.borid=borrowing.borid AND borrowing.callNumber=book.callNumber AND bid=?");
+														+ " FROM fine,borrowing,book"
+														+ " WHERE fine.borid=borrowing.borid AND borrowing.callNumber=book.callNumber AND bid=?");
+			
 			PreparedStatement ps3 = conn.prepareStatement("SELECT book.callNumber,title"
-					+ " FROM holdRequest,book"
-					+ " WHERE holdRequest.callNumber = book.callNumber AND bid=?");
+														+ " FROM holdRequest,book"
+														+ " WHERE holdRequest.callNumber = book.callNumber AND bid=?");
 			ps.setString(1, bid);
 			ResultSet rs = ps.executeQuery();
 			while (rs.next()) {
@@ -433,7 +512,14 @@ public class LibrarySQLUtil {
 		return result;
 	}
 
-	// add a new hold request
+	/**
+	 * Place a hold request on a book item. Refer to the icanhazbookz User Manual for more specifics.
+	 * 
+	 * @param bid the card number of the borrower
+	 * @param callNumber the call number of the book that the borrower wishes to place a hold request for
+	 * 
+	 * @return a message indicating success or failure
+	 */
 	public static String holdRequest(String bid, String callNumber) {
 
 		Date today = new java.util.Date();
@@ -451,7 +537,10 @@ public class LibrarySQLUtil {
 
 			int tempCopyNo;
 			PreparedStatement ps2 = conn.prepareStatement("SELECT copyNo FROM bookCopy WHERE callNumber=? and copyStatus='out'");
-			PreparedStatement ps3 = conn.prepareStatement("INSERT INTO holdRequest (hid,bid,callNumber,issuedDate,flag) VALUES (seq_holdRequest.nextval,?,?,?,?)");
+			
+			PreparedStatement ps3 = conn.prepareStatement("INSERT INTO holdRequest (hid,bid,callNumber,issuedDate,flag) "
+														+ "VALUES (seq_holdRequest.nextval,?,?,?,?)");
+			
 			PreparedStatement ps4 = conn.prepareStatement("UPDATE bookCopy SET copyStatus='on-hold' WHERE callNumber=? AND copyNo=?");
 
 			ps2.setString(1, callNumber);
@@ -483,7 +572,14 @@ public class LibrarySQLUtil {
 		return SUCCESS_STRING + "Hold request for item " + callNumber + " was successful.";
 	}
 
-	// pay a fine that resulted from a particular borrowing instance
+	/**
+	 * Pay for a fine. Refer to the icanhazbookz User Manual for more specifics.
+	 * 
+	 * @param borid the borrowing reference id
+	 * @param amount the fine amount to pay
+	 *
+	 * @return a message indicating success or failure
+	 */
 	public static String payFines(int borid, int amount) {
 		try {
 			int moneyOwed;
@@ -516,7 +612,11 @@ public class LibrarySQLUtil {
 		return "Thank you for your payment. Please pay the remainder of the fine soon.";
 	}
 
-	// display overdue items
+	/**
+	 * Check for all books that are overdue in the library database. Refer to the icanhazbookz User Manual for more specifics.
+	 * 
+	 * @return the list of all overdue book title's and call numbers with the borrower's name and email address who checked it out
+	 */
 	public static List<String[]> getOverdueItems() {
 
 		List<String[]> result = new ArrayList<String[]>();
@@ -524,10 +624,10 @@ public class LibrarySQLUtil {
 		Date dueDate;
 		Date today = new java.util.Date();
 		try {
-			PreparedStatement ps = conn.prepareStatement("SELECT book.callNumber,bName,bType,emailAddress,outDate,title"
-					+ " FROM borrowing,borrower,book"
-					+ " WHERE borrowing.bid=borrower.bid AND book.callNumber=borrowing.callNumber AND inDate IS NULL"
-					+ " ORDER BY bName");
+			PreparedStatement ps = conn.prepareStatement("SELECT book.callNumber,bName,bType,emailAddress,outDate,title "
+														+ "FROM borrowing,borrower,book "
+														+ "WHERE borrowing.bid=borrower.bid AND book.callNumber=borrowing.callNumber AND inDate IS NULL "
+														+ "ORDER BY bName");
 			ResultSet rs = ps.executeQuery();
 			while (rs.next()) {
 				borrowerType = rs.getString(3);
@@ -550,7 +650,22 @@ public class LibrarySQLUtil {
 		return result;
 	}
 
-	// add a new book
+
+	/**
+	 * Adds a new book or new copy of an existing book to the library.
+	 * Refer to the icanhazbookz User Manual for more specifics.
+	 * 
+	 * @param callNumber the call number of the book to be added into icanhazbookz library
+	 * @param isbn the isbn of the book to be added into icanhazbookz library
+	 * @param title the title of the book to be added into icanhazbookz library
+	 * @param author the main (first) author of the book to be added into icanhazbookz library
+	 * @param authors additional authors of the book to be added into icanhazbookz library
+	 * @param subjects related subject fields of the book to be added into icanhazbookz library
+	 * @param publisher the publisher of the book to be added into icanhazbookz library
+	 * @param publishedYear the year the book was published
+	 * 
+	 * @return a message indicating success or failure
+	 */
 	public static String addBook(String callNumber, String isbn, String title,
 			String author, String authors, String subjects, String publisher, String publishedYear) {
 
@@ -575,7 +690,9 @@ public class LibrarySQLUtil {
 			}
 
 			PreparedStatement ps2 = conn.prepareStatement("INSERT INTO book VALUES (?,?,?,?,?,?)");
+
 			PreparedStatement ps3 = conn.prepareStatement("INSERT INTO bookCopy VALUES (?,?,?)");
+
 
 			ps2.setString(1, callNumber);
 			ps2.setString(2, isbn);
@@ -659,14 +776,17 @@ public class LibrarySQLUtil {
 
 	}
 
+
 	/**
 	 * Generate a report with all the books that have been checked out.
-	 *
-	 * should return List<String[]>: Call Number, Copy Num, Title, CheckOut Date, Due Date, Overdue Y/N?
-	 * should be ordered by Call Number
-	 * if Subject field is not empty, generate checkOut books pertaining to the subject
-	 **/
-
+	 * Refer to the icanhazbookz User Manual for more specifics.
+	 * 
+	 * @param subject the subject field of a book
+	 * 
+	 * @return a list of all the books that are currently checked out (pertaining to the subject field if specified).
+	 * 			Returns the book's call number, copy number, title, the date it was checked out and the expected return date. 
+	 * 			Flag if the book is overdue
+	 */
 	public static List<String[]> generateBookReport(String subject) {
 
 		List<String[]> result = new ArrayList<String[]>();
@@ -675,16 +795,16 @@ public class LibrarySQLUtil {
 		PreparedStatement ps;
 		try {
 			if (subject.isEmpty()) {
-				ps = conn.prepareStatement("SELECT book.callNumber,copyNo,title,outDate,bType"
-						+ " FROM book,borrowing,borrower"
-						+ " WHERE borrowing.callNumber=book.callNumber AND borrower.bid=borrowing.bid AND inDate IS NULL"
-						+ " ORDER BY callNumber");
+				ps = conn.prepareStatement("SELECT book.callNumber,copyNo,title,outDate,bType "
+										+ "FROM book,borrowing,borrower "
+										+ "WHERE borrowing.callNumber=book.callNumber AND borrower.bid=borrowing.bid AND inDate IS NULL "
+										+ "ORDER BY callNumber");
 			} else {
-				ps = conn.prepareStatement("SELECT book.callNumber,copyNo,title,outDate,bType"
-						+ " FROM book,borrowing,borrower,hasSubject"
-						+ " WHERE borrowing.callNumber=book.callNumber AND borrower.bid=borrowing.bid"
-						+ " AND inDate IS NULL AND bookSubject=? AND hasSubject.callNumber=borrowing.callNumber"
-						+ " ORDER BY callNumber");
+				ps = conn.prepareStatement("SELECT book.callNumber,copyNo,title,outDate,bType "
+										+ "FROM book,borrowing,borrower,hasSubject "
+										+ "WHERE borrowing.callNumber=book.callNumber AND borrower.bid=borrowing.bid "
+										+ "AND inDate IS NULL AND bookSubject=? AND hasSubject.callNumber=borrowing.callNumber "
+										+ "ORDER BY callNumber");
 				ps.setString(1, subject);
 
 			}
@@ -711,16 +831,25 @@ public class LibrarySQLUtil {
 		return result;
 	}
 
+	/**
+	 * Generate a report with the most popular items in a given year.
+	 * Refer to the icanhazbookz User Manual for more specifics.
+	 * 
+	 * @param year the year to query for the most popular books
+	 * @param n the number of results for the most popular books
+	 * 
+	 * @return the list of the top n popular books in the given year
+	 */
 	public static List<String[]> listMostPopularItems(String year, int n) {
 		String title, author, callNum;
 		int count, i = 0;
 		List<String[]> result = new ArrayList<String[]>();
 		try {
 			PreparedStatement ps = conn.prepareStatement("SELECT title, mainAuthor, borrowing.callNumber, COUNT(*) AS scount"
-					+ " FROM borrowing, book"
-					+ " WHERE borrowing.callNumber=book.callNumber AND TO_CHAR(outDate, 'mm/dd/yyyy') LIKE ?"
-					+ " GROUP BY title, mainAuthor, borrowing.callNumber"
-					+ " ORDER BY scount");
+														+ "FROM borrowing, book "
+														+ "WHERE borrowing.callNumber=book.callNumber AND TO_CHAR(outDate, 'mm/dd/yyyy') LIKE ? "
+														+ "GROUP BY title, mainAuthor, borrowing.callNumber "
+														+ "ORDER BY scount");
 			ps.setString(1, "%" + year + "%");
 			ResultSet rs = ps.executeQuery();
 			while (rs.next() && i < n) {
@@ -738,6 +867,14 @@ public class LibrarySQLUtil {
 		return result;
 	}
 
+	/**
+	 * Gets the expected due date for a book based on the borrower type and the check out date.
+	 * 
+	 * @param borrowDate the date the book was checked out
+	 * @param borrowerType the borrower type. One of "Student", "Faculty", or "Staff"
+	 * 
+	 * @return the due date for the given book
+	 */
 	private static Date getDueDate(Date borrowDate, String borrowerType) {
 		Date dueDate;
 		if (borrowerType.equals("Student")) {
