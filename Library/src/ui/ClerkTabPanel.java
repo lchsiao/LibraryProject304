@@ -9,6 +9,7 @@ import java.awt.event.ItemListener;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -481,18 +482,25 @@ public class ClerkTabPanel extends UserTabPanel {
 			StringBuilder msgBuilder = new StringBuilder("Hello ");
 			
 			List<String> nameList = emailToNameMap.get(emailString);
-			for (int i = 0; i < nameList.size()-1; i++) {
-				msgBuilder.append(nameList.get(i)).append(", ");
+			HashSet<String> hs = new HashSet<String>();
+			hs.addAll(nameList);
+			nameList.clear();
+			nameList.addAll(hs);
+			
+			if (nameList.size() > 2) {
+				for (int i = 0; i < nameList.size()-1; i++) {
+					msgBuilder.append(nameList.get(i).trim()).append(", ");
+				}
+				msgBuilder.append(" and ").append(nameList.get(nameList.size()-1).trim()).append(",");
 			}
 			
-			if (nameList.size() == 2) {
-				msgBuilder.setLength(msgBuilder.length()-2);
-			}
+			if (nameList.size() == 1) {
+				msgBuilder.append(nameList.get(0).trim()).append(", ");
+			}	
 			
-			if (nameList.size() != 1) {
-				msgBuilder.append(" and ");
+			if (nameList.size() == 2)  { 
+				msgBuilder.append(nameList.get(0).trim()).append(" and ").append(nameList.get(1).trim()).append(",");
 			}
-			msgBuilder.append(nameList.get(nameList.size()-1)).append(",");
 			
 			msgBuilder.append("\n\n");
 			msgBuilder.append("You have the following overdue items: ");
