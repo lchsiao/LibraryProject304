@@ -3,6 +3,8 @@ package ui;
 import java.awt.BorderLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
 import java.util.List;
 
 import javax.swing.JButton;
@@ -123,7 +125,7 @@ public class BorrowerTabPanel extends UserTabPanel {
 		createCheckAccountPanelTop.setBorder(new EmptyBorder(10, 10, 10, 10));
 
 		JLabel bidLabel = new JLabel("Card Number:");
-		checkAcctBidField = new JFormattedTextField(idFormat);
+		checkAcctBidField = new JFormattedTextField(intFormat);
 		createCheckAccountPanelTop.add(bidLabel);
 		createCheckAccountPanelTop.add(checkAcctBidField);
 		checkAcctBidField.setToolTipText("Required: Enter the borrower's card number.");
@@ -159,7 +161,7 @@ public class BorrowerTabPanel extends UserTabPanel {
 		createRequestHoldPanelTop.setBorder(new EmptyBorder(10, 10, 10, 10));
 
 		JLabel bidLabel = new JLabel("Card Number:");
-		requestHoldBidField = new JFormattedTextField(idFormat);
+		requestHoldBidField = new JFormattedTextField(intFormat);
 		createRequestHoldPanelTop.add(bidLabel);
 		createRequestHoldPanelTop.add(requestHoldBidField);
 		requestHoldBidField.setToolTipText("Required: Enter the borrower's card number.");
@@ -192,7 +194,7 @@ public class BorrowerTabPanel extends UserTabPanel {
 		createPayFinesPanelTop.setBorder(new EmptyBorder(10, 10, 10, 10));
 
 		JLabel boridLabel = new JLabel("Borrow Reference:");
-		boridField = new JFormattedTextField(idFormat);
+		boridField = new JFormattedTextField(intFormat);
 		createPayFinesPanelTop.add(boridLabel);
 		createPayFinesPanelTop.add(boridField);
 		boridField.setToolTipText("Required: Enter the borrowing reference id.");
@@ -202,6 +204,24 @@ public class BorrowerTabPanel extends UserTabPanel {
 		createPayFinesPanelTop.add(amountLabel);
 		createPayFinesPanelTop.add(amountField);
 		amountField.setToolTipText("Required: Enter the amount that you wish to pay now.");
+		amountField.addFocusListener(new FocusListener() {
+
+			@Override
+			public void focusGained(FocusEvent e) {
+				JTextField field = (JTextField) e.getSource();
+				if (field.getText().isEmpty()) {
+					field.setText("0.00");
+				}		
+			}
+
+			@Override
+			public void focusLost(FocusEvent e) {
+				JTextField field = (JTextField) e.getSource();
+				if (field.getText().isEmpty()) {
+					field.setText("0.00");
+				}
+			}
+		});
 
 		createPayFinesPanel.add(createPayFinesPanelTop, BorderLayout.PAGE_START);
 
