@@ -13,6 +13,7 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.swing.Box;
 import javax.swing.JButton;
@@ -452,7 +453,7 @@ public class ClerkTabPanel extends UserTabPanel {
 		int titleIndex = 1; 
 		
 		Map<String, List<String>> emailToBookMap = new HashMap<String, List<String>>();
-		Map<String, List<String>> emailToNameMap = new HashMap<String, List<String>>();
+		Map<String, Set<String>> emailToNameMap = new HashMap<String, Set<String>>();
 		
 		for (int i = 0; i < overdueItemsTable.getRowCount(); i++) {
 			
@@ -470,7 +471,7 @@ public class ClerkTabPanel extends UserTabPanel {
 				emailToBookMap.get(email).add(bookString);
 				
 				if (!emailToNameMap.containsKey(email)) {
-					emailToNameMap.put(email, new ArrayList<String>());
+					emailToNameMap.put(email, new HashSet<String>());
 				}
 				emailToNameMap.get(email).add(name);
 			}
@@ -481,11 +482,8 @@ public class ClerkTabPanel extends UserTabPanel {
 			
 			StringBuilder msgBuilder = new StringBuilder("Hello ");
 			
-			List<String> nameList = emailToNameMap.get(emailString);
-			HashSet<String> hs = new HashSet<String>();
-			hs.addAll(nameList);
-			nameList.clear();
-			nameList.addAll(hs);
+			Set<String> nameSet = emailToNameMap.get(emailString);
+			List<String> nameList = new ArrayList<String>(nameSet);
 			
 			if (nameList.size() > 2) {
 				for (int i = 0; i < nameList.size()-1; i++) {
