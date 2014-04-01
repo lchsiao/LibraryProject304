@@ -198,9 +198,9 @@ public class LibrarySQLUtil {
 		}
 
 		if (result.isEmpty()) {
-			return "All of the bookz you have selected are out or on-hold.";
+			return "All of the books you have selected are out or on-hold.";
 		}
-		return SUCCESS_STRING + "Here are the bookz you have checked out:\r\n" + result;
+		return SUCCESS_STRING + "Here are the books you have checked out:\r\n" + result;
 	}
 
 	// find the books that match the title, author, and/or subject parameters
@@ -209,7 +209,7 @@ public class LibrarySQLUtil {
 		int numIn, numOut, numOnHold;
 		List<String[]> result = new ArrayList<String[]>();
 		try {
-			PreparedStatement ps = conn.prepareStatement("SELECT book.callNumber,title "
+			PreparedStatement ps = conn.prepareStatement("SELECT DISTINCT book.callNumber,title "
 					+ "FROM book,hasAuthor,hasSubject "
 					+ "WHERE book.callNumber=hasAuthor.callNumber AND book.callNumber=hasSubject.callNumber "
 					+ "AND (title LIKE ? OR aName=? OR bookSubject=?)");
@@ -550,7 +550,7 @@ public class LibrarySQLUtil {
 		return result;
 	}
 
-	// add a 
+	// add a new book
 	public static String addBook(String callNumber, String isbn, String title,
 			String author, String authors, String subjects, String publisher, String publishedYear) {
 
@@ -562,9 +562,10 @@ public class LibrarySQLUtil {
 			if (rs.next()) {
 				copyNumber = rs.getInt(1);
 				if (copyNumber != 0) {
-					PreparedStatement ps1 = conn.prepareStatement("UPDATE bookCopy SET copyNo=? WHERE callNumber=?");
-					ps1.setInt(1, ++copyNumber);
-					ps1.setString(2, callNumber);
+					PreparedStatement ps1 = conn.prepareStatement("INSERT INTO bookCopy VALUES (?,?,?)");
+					ps1.setString(1, callNumber);
+					ps1.setInt(2, ++copyNumber);
+					ps1.setString(3, "in");
 					ps1.executeUpdate();
 					rs.close();
 					ps.close();
@@ -574,7 +575,7 @@ public class LibrarySQLUtil {
 			}
 
 			PreparedStatement ps2 = conn.prepareStatement("INSERT INTO book VALUES (?,?,?,?,?,?)");
-			PreparedStatement ps3 = conn.prepareStatement("INSERT INTO bookCopy VALUES(?,?,?)");
+			PreparedStatement ps3 = conn.prepareStatement("INSERT INTO bookCopy VALUES (?,?,?)");
 
 			ps2.setString(1, callNumber);
 			ps2.setString(2, isbn);
@@ -638,6 +639,9 @@ public class LibrarySQLUtil {
 					ps.setString(2, aauthor.trim());
 					ps.addBatch();
 				}
+				ps.setString(1, callNumber);
+				ps.setString(2, author);
+				ps.addBatch();
 				ps.executeBatch();
 				conn.commit();
 				ps.close();
