@@ -81,16 +81,19 @@ public class BorrowerTabPanel extends UserTabPanel {
 		titleField = new JTextField();
 		createSearchBooksPanelTop.add(titleLabel);
 		createSearchBooksPanelTop.add(titleField);
+		titleField.setToolTipText("Optional: Enter keyword search for the book title. Case sensitive.");
 
 		JLabel authorLabel = new JLabel("Author:");
 		authorField = new JTextField();
 		createSearchBooksPanelTop.add(authorLabel);
 		createSearchBooksPanelTop.add(authorField);
+		authorField.setToolTipText("Optional: Enter keyword search for the book authors. One author per query.");
 		
 		JLabel subjectLabel = new JLabel("Subject:");
 		subjectField = new JTextField();
 		createSearchBooksPanelTop.add(subjectLabel);
 		createSearchBooksPanelTop.add(subjectField);
+		subjectField.setToolTipText("Optional: Enter keyword search for the book subjects. One subject per query.");
 		
 		createSearchBooksPanel.add(createSearchBooksPanelTop, BorderLayout.PAGE_START);
 
@@ -123,6 +126,8 @@ public class BorrowerTabPanel extends UserTabPanel {
 		checkAcctBidField = new JFormattedTextField(idFormat);
 		createCheckAccountPanelTop.add(bidLabel);
 		createCheckAccountPanelTop.add(checkAcctBidField);
+		checkAcctBidField.setToolTipText("Required: Enter the borrower's card number.");
+
 
 		createCheckAccountPanel.add(createCheckAccountPanelTop, BorderLayout.PAGE_START);
 
@@ -157,11 +162,13 @@ public class BorrowerTabPanel extends UserTabPanel {
 		requestHoldBidField = new JFormattedTextField(idFormat);
 		createRequestHoldPanelTop.add(bidLabel);
 		createRequestHoldPanelTop.add(requestHoldBidField);
+		requestHoldBidField.setToolTipText("Required: Enter the borrower's card number.");
 		
 		JLabel callNumberLabel = new JLabel("Call Number:");
 		callNumberField = new JTextField();
 		createRequestHoldPanelTop.add(callNumberLabel);
 		createRequestHoldPanelTop.add(callNumberField);
+		callNumberField.setToolTipText("Required: Enter the book's call number to request a hold.");
 
 		createRequestHoldPanel.add(createRequestHoldPanelTop, BorderLayout.PAGE_START);
 
@@ -188,11 +195,13 @@ public class BorrowerTabPanel extends UserTabPanel {
 		boridField = new JFormattedTextField(idFormat);
 		createPayFinesPanelTop.add(boridLabel);
 		createPayFinesPanelTop.add(boridField);
+		boridField.setToolTipText("Required: Enter the borrowing reference id.");
 		
 		JLabel amountLabel = new JLabel("Amount:");
 		amountField = new JFormattedTextField(currencyFormat);
 		createPayFinesPanelTop.add(amountLabel);
 		createPayFinesPanelTop.add(amountField);
+		amountField.setToolTipText("Required: Enter the amount that you wish to pay now.");
 
 		createPayFinesPanel.add(createPayFinesPanelTop, BorderLayout.PAGE_START);
 
