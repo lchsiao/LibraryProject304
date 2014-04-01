@@ -131,8 +131,8 @@ public class LibrarySQLUtil {
 		}
 		try {
 			PreparedStatement ps = conn.prepareStatement("SELECT c.callNumber,copyNo,title,hid FROM " +
-					"((SELECT a.callNumber, copyno, title FROM book a, bookcopy b WHERE a.callnumber=b.callNumber AND a.callnumber=?" +
-					" AND (copystatus='in' OR copystatus='on-hold') ORDER BY copystatus DESC) c LEFT JOIN holdrequest d ON c.callnumber=d.callnumber AND d.bid=?)");
+					"((SELECT a.callNumber, copyNo, title FROM book a,bookcopy b WHERE a.callNumber=b.callNumber AND a.callNumber=?" +
+					" AND (copyStatus='in' OR copyStatus='on-hold') ORDER BY copyStatus DESC) c LEFT JOIN holdrequest d ON c.callnumber=d.callnumber AND d.bid=? AND flag='true')");
 			PreparedStatement ps2 = conn.prepareStatement("UPDATE bookCopy"
 														+ " SET copyStatus='out'"
 														+ " WHERE callNumber=? AND copyNo=?");
@@ -265,12 +265,13 @@ public class LibrarySQLUtil {
 		Date borrowedDate, dueDate;
 		Date today = new java.util.Date();
 		try {
-			PreparedStatement ps = conn.prepareStatement("SELECT borid,bid,outDate FROM borrowing WHERE callNumber=? AND copyNo=?");
+			PreparedStatement ps = conn.prepareStatement("SELECT borid,bid,outDate FROM borrowing B,bookCopy C "
+					+ "WHERE B.callNumber=? AND B.copyNo=? AND B.callNumber=C.callNumber AND B.copyNo=C.copyNo AND copyStatus='out'");
 			PreparedStatement ps2 = conn.prepareStatement("UPDATE borrowing SET inDate=? WHERE borid=?");
 			PreparedStatement ps3 = conn.prepareStatement("SELECT bid FROM holdRequest WHERE callNumber=? AND flag='false'");
 			PreparedStatement ps4 = conn.prepareStatement("UPDATE bookCopy SET copyStatus='in' WHERE callNumber=? AND copyNo=?");
 			PreparedStatement ps5 = conn.prepareStatement("UPDATE bookCopy SET copyStatus='on-hold' WHERE callNumber=? AND copyNo=?");
-			PreparedStatement ps5a = conn.prepareStatement("UPDATE holdRequest C SET flag='true' WHERE C.hid=(SELECT MIN(H.hid) from holdRequest H WHERE callNumber=? AND flag='false'");
+			PreparedStatement ps5a = conn.prepareStatement("UPDATE holdRequest C SET flag='true' WHERE C.hid=(SELECT MIN(H.hid) from holdRequest H WHERE callNumber=? AND flag='false')");
 			PreparedStatement ps7 = conn.prepareStatement("SELECT bType FROM borrower WHERE bid=?");
 			PreparedStatement ps8 = conn.prepareStatement("INSERT INTO fine (fid,amount,issuedDate,paidDate,borid)"
                                                           + "VALUES (seq_fine.nextval,?,?,?,?)");
