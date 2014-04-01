@@ -80,6 +80,7 @@ public class LibrarySQLUtil {
 	public static String addBorrower(String name, String password, String address, String phone, String email, String sinOrStdNo, String type) {
 
 		Date today = new java.util.Date();
+		String bid = "";
 		try {
 			PreparedStatement ps = conn.prepareStatement("INSERT INTO borrower (bid,bPass,bName,address,phone,emailAddress,sinOrStNo,expiryDate,bType) "
 														+ "VALUES (seq_borrower.nextval,?,?,?,?,?,?,?,?)");
@@ -98,8 +99,20 @@ public class LibrarySQLUtil {
 			ps.setString(8, type);
 			
 			ps.execute();
-			conn.commit();
 			ps.close();
+			
+			PreparedStatement ps1 = conn.prepareStatement("SELECT bid FROM borrower WHERE sinOrStNo=?");
+			
+			ps1.setString(1, sinOrStdNo);
+			ResultSet rs = ps1.executeQuery();
+			if (rs.next()) {
+				bid = Integer.toString(rs.getInt(1));
+			}
+			rs.close();
+			ps1.close();
+		
+			conn.commit();
+			
 		} catch (SQLException e) {
 			try {
 				conn.rollback();
@@ -108,7 +121,7 @@ public class LibrarySQLUtil {
 				return e1.getMessage();
 			}
 		}
-		return SUCCESS_STRING + "New borrower " +  "added.";
+		return SUCCESS_STRING + "New borrower with bid " + bid + " added.";
 	}
 
 	/**
