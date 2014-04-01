@@ -334,15 +334,14 @@ public class LibrarySQLUtil {
 			
 			PreparedStatement ps2 = conn.prepareStatement("UPDATE borrowing SET inDate=? WHERE borid=?");
 			
-			PreparedStatement ps3 = conn.prepareStatement("SELECT bid FROM holdRequest WHERE callNumber=? AND flag='false'");
+			PreparedStatement ps3 = conn.prepareStatement("SELECT bid, hid FROM holdRequest WHERE callNumber=? AND flag='false' ORDER BY hid");
 			
 			PreparedStatement ps4 = conn.prepareStatement("UPDATE bookCopy SET copyStatus='in' WHERE callNumber=? AND copyNo=?");
 			
 			PreparedStatement ps5 = conn.prepareStatement("UPDATE bookCopy SET copyStatus='on-hold' WHERE callNumber=? AND copyNo=?");
 			
 			PreparedStatement ps5a = conn.prepareStatement("UPDATE holdRequest C SET flag='true' "
-														+ "WHERE C.hid=(SELECT MIN(H.hid) FROM holdRequest H "
-														+ "WHERE callNumber=? AND flag='false')");
+														+ "WHERE C.hid=? AND flag='false'");
 			
 			PreparedStatement ps7 = conn.prepareStatement("SELECT bType FROM borrower WHERE bid=?");
 			
@@ -389,8 +388,11 @@ public class LibrarySQLUtil {
 			ps3.setString(1, callNum);
 			ResultSet rs3 = ps3.executeQuery();
 			if (rs3.next()) {
+				String holdBID = rs3.getString(1);
+				String hid = rs3.getString(2);
+				
 				PreparedStatement ps6 = conn.prepareStatement("SELECT bName,emailAddress FROM borrower WHERE bid=?");
-				ps6.setString(1, rs3.getString(1));
+				ps6.setString(1, holdBID);
 				ResultSet rs6 = ps6.executeQuery();
 
 				if (rs6.next()) {
@@ -402,7 +404,7 @@ public class LibrarySQLUtil {
 
 					ps5.setString(1, callNum);
 					ps5.setInt(2, copyNum);
-					ps5a.setString(1, callNum);
+					ps5a.setString(1, hid);
 					ps5.executeUpdate();
 					ps5a.executeUpdate();	
 					ps5.close();
@@ -536,13 +538,10 @@ public class LibrarySQLUtil {
 			rs.close();
 			ps.close();
 
-			int tempCopyNo;
 			PreparedStatement ps2 = conn.prepareStatement("SELECT copyNo FROM bookCopy WHERE callNumber=? and copyStatus='out'");
 			
 			PreparedStatement ps3 = conn.prepareStatement("INSERT INTO holdRequest (hid,bid,callNumber,issuedDate,flag) "
 														+ "VALUES (seq_holdRequest.nextval,?,?,?,?)");
-			
-			PreparedStatement ps4 = conn.prepareStatement("UPDATE bookCopy SET copyStatus='on-hold' WHERE callNumber=? AND copyNo=?");
 
 			ps2.setString(1, callNumber);
 			ResultSet rs2 = ps2.executeQuery();
@@ -551,7 +550,6 @@ public class LibrarySQLUtil {
 				ps2.close();
 				return "Hold request failed. All copies of this item are on-hold.";
 			}
-			tempCopyNo = rs2.getInt(1);
 			rs2.close();
 			ps2.close();
 
@@ -562,10 +560,6 @@ public class LibrarySQLUtil {
 			ps3.executeUpdate();
 			ps3.close();
 
-			ps4.setString(1, callNumber);
-			ps4.setInt(2, tempCopyNo);
-			ps4.executeUpdate();
-			ps4.close();
 			conn.commit();
 		} catch (SQLException e) {
 			e.printStackTrace();
