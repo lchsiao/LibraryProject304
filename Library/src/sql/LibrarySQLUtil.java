@@ -593,7 +593,7 @@ public class LibrarySQLUtil {
 				ps2.executeUpdate();
 				ps2.close();
 				conn.commit();
-				return "Successfully paid fine.";
+				return SUCCESS_STRING + "No outstanding fines.";
 			}
 			PreparedStatement ps3 = conn.prepareStatement("UPDATE fine SET amount=? WHERE borid=?");
 			ps3.setInt(1, (moneyOwed - amount));
