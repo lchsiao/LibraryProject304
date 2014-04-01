@@ -134,9 +134,8 @@ public class LibrarySQLUtil {
 	 */
 	public static String checkOutItems(String bid, List<String> items) {
 
-		String result = "";
+		String result = "", borrowerType;
 		ResultSet rs = null;
-		String borrowerType;
 		Date today = new java.util.Date();
 		try {
 			PreparedStatement p = conn.prepareStatement("SELECT bid,bType FROM borrower WHERE bid=?");
@@ -165,12 +164,13 @@ public class LibrarySQLUtil {
 		} catch (SQLException e3) {
 			return e3.getMessage();
 		}
+		
 		try {
 			PreparedStatement ps = conn.prepareStatement("SELECT c.callNumber,copyNo,title,hid,copyStatus FROM " 
 														+"((SELECT a.callNumber, copyNo, title, copyStatus "
-															+ "FROM book a,bookcopy b "
-															+ "WHERE a.callNumber=b.callNumber AND a.callNumber=? " 
-															+ "AND (copyStatus='in' OR copyStatus='on-hold') ORDER BY copyStatus DESC) "
+														+ "FROM book a,bookcopy b "
+														+ "WHERE a.callNumber=b.callNumber AND a.callNumber=? " 
+														+ "AND (copyStatus='in' OR copyStatus='on-hold') ORDER BY copyStatus DESC) "
 														+ "c LEFT JOIN holdrequest d ON c.callnumber=d.callnumber AND d.bid=? AND flag='true')");
 			
 			PreparedStatement ps2 = conn.prepareStatement("UPDATE bookCopy "
@@ -449,7 +449,7 @@ public class LibrarySQLUtil {
 
 		List<List<String[]>> result = new ArrayList<List<String[]>>();
 		List<String[]> borrows = new ArrayList<String[]>(), fines = new ArrayList<String[]>(), holds = new ArrayList<String[]>();
-		String title, borrowerType, dueDate, fineAmount, callNum, copyNum;
+		String title, borrowerType, dueDate, fineAmount, callNum, copyNum, borID;
 		try {
 			PreparedStatement p = conn.prepareStatement("SELECT bType FROM borrower WHERE bid=?");
 			p.setString(1, bid);
@@ -462,7 +462,7 @@ public class LibrarySQLUtil {
 														+ " FROM borrowing,book "
 														+ " WHERE book.callNumber=borrowing.callNumber AND bid=? AND inDate IS NULL");
 			
-			PreparedStatement ps2 = conn.prepareStatement("SELECT amount,borrowing.callNumber,title"
+			PreparedStatement ps2 = conn.prepareStatement("SELECT amount,borrowing.callNumber,title,fine.borid"
 														+ " FROM fine,borrowing,book"
 														+ " WHERE fine.borid=borrowing.borid AND borrowing.callNumber=book.callNumber AND bid=?");
 			
@@ -488,7 +488,8 @@ public class LibrarySQLUtil {
 				fineAmount = "$" + Integer.toString(rs2.getInt(1)) + ".00";
 				callNum = rs2.getString(2);
 				title = rs2.getString(3);
-				String[] fine = {callNum, title, fineAmount};
+				borID = Integer.toString(rs2.getInt(4));
+				String[] fine = {callNum, title, fineAmount, borID};
 				fines.add(fine);
 			}
 			rs2.close();
