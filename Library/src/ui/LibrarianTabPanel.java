@@ -78,44 +78,50 @@ public class LibrarianTabPanel extends UserTabPanel {
 		callNumberField = new JTextField();
 		createAddBookPanelTop.add(callNumberLabel);
 		createAddBookPanelTop.add(callNumberField);
+		callNumberField.setToolTipText("Required: Enter the unique call number for this book (max 20 characters). Last 4 digits must be the book's published year.");
 
 		
 		JLabel isbnLabel = new JLabel("ISBN:");
 		isbnField = new JTextField();
 		createAddBookPanelTop.add(isbnLabel);
 		createAddBookPanelTop.add(isbnField);
+		isbnField.setToolTipText("Required: Enter the unique isbn for this book (max 20 characters).");
 
 		JLabel titleLabel = new JLabel("Book Title:");
 		titleField = new JTextField();
 		createAddBookPanelTop.add(titleLabel);
 		createAddBookPanelTop.add(titleField);
+		titleField.setToolTipText("Required: Enter the book's title (max 50 characters).");
 		
 		JLabel authorLabel = new JLabel("Main Author:");
 		authorField = new JTextField();
 		createAddBookPanelTop.add(authorLabel);
 		createAddBookPanelTop.add(authorField);
+		authorField.setToolTipText("Required: Enter the book's first author (max 30 characters).");
 		
 		JLabel authorsLabel = new JLabel("Additional Authors:");
 		authorsField = new JTextField();
 		createAddBookPanelTop.add(authorsLabel);
 		createAddBookPanelTop.add(authorsField);
-		authorsField.setToolTipText("Separate additional author names by commas.");
+		authorsField.setToolTipText("Optional: For additional author names, separate by commas.");
 		
 		JLabel subjectsLabel = new JLabel("Subjects:");
 		subjectsField = new JTextField();
 		createAddBookPanelTop.add(subjectsLabel);
 		createAddBookPanelTop.add(subjectsField);
-		subjectsField.setToolTipText("Separate subject names by commas.");
+		subjectsField.setToolTipText("Optional: For more than one subject, separate by commas.");
 		
 		JLabel publisherLabel = new JLabel("Publisher:");
 		publisherField = new JTextField();
 		createAddBookPanelTop.add(publisherLabel);
 		createAddBookPanelTop.add(publisherField);
+		publisherField.setToolTipText("Required: Enter the publisher for this book (max 30 characters).");
 		
 		JLabel publishedYearLabel = new JLabel("Published Year:");
 		publishedYearField = new JTextField();
 		createAddBookPanelTop.add(publishedYearLabel);
 		createAddBookPanelTop.add(publishedYearField);
+		publishedYearField.setToolTipText("Required: Enter the book's year of publication. This should be used as the last 4 digits for call number.");
 		
 		createAddBookPanel.add(createAddBookPanelTop, BorderLayout.PAGE_START);
 
@@ -149,6 +155,7 @@ public class LibrarianTabPanel extends UserTabPanel {
 		subjectField = new JTextField();
 		createGenerateBookReportPanelTop.add(subjectLabel);
 		createGenerateBookReportPanelTop.add(subjectField);
+		subjectField.setToolTipText("Enter a subject name for constraining book report results pertaining only to those books related to the subject field.");
 		
 		createGenerateBookReportPanel.add(createGenerateBookReportPanelTop, BorderLayout.PAGE_START);
 
@@ -182,11 +189,13 @@ public class LibrarianTabPanel extends UserTabPanel {
 		yearField = new JTextField();
 		createListMostPopularItemsPanelTop.add(yearLabel);
 		createListMostPopularItemsPanelTop.add(yearField);
+		yearField.setToolTipText("Required: Enter the year in which you are interested in finding the most popular books.");
 		
 		JLabel nLabel = new JLabel("Number of top books to be displayed:");
 		nField = new JTextField();
 		createListMostPopularItemsPanelTop.add(nLabel);
 		createListMostPopularItemsPanelTop.add(nField);
+		nField.setToolTipText("Required: Enter the number of top popular books you want to view.");
 		
 		createListMostPopularItemsPanel.add(createListMostPopularItemsPanelTop, BorderLayout.PAGE_START);
 
