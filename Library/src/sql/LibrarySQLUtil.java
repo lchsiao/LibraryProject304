@@ -146,14 +146,8 @@ public class LibrarySQLUtil {
 				ps.setString(1,items.get(i));
 				ps.setString(2, bid);
 				rs = ps.executeQuery();
-<<<<<<< HEAD
-
-				if (rs.next()) {
-
-=======
 				
 				while (rs.next()) {
->>>>>>> 2d2bce080c451fa8d11d4ec731c2d81de317acd8
 					// check if on-hold
 					String hid = rs.getString(4);
 					String status = rs.getString(5);
