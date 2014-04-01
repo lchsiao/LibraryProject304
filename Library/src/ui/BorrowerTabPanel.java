@@ -200,28 +200,10 @@ public class BorrowerTabPanel extends UserTabPanel {
 		boridField.setToolTipText("Required: Enter the borrowing reference id.");
 		
 		JLabel amountLabel = new JLabel("Amount:");
-		amountField = new JFormattedTextField(currencyFormat);
+		amountField = new JFormattedTextField(intFormat);
 		createPayFinesPanelTop.add(amountLabel);
 		createPayFinesPanelTop.add(amountField);
 		amountField.setToolTipText("Required: Enter the amount that you wish to pay now.");
-		amountField.addFocusListener(new FocusListener() {
-
-			@Override
-			public void focusGained(FocusEvent e) {
-				JTextField field = (JTextField) e.getSource();
-				if (field.getText().isEmpty()) {
-					field.setText("0.00");
-				}		
-			}
-
-			@Override
-			public void focusLost(FocusEvent e) {
-				JTextField field = (JTextField) e.getSource();
-				if (field.getText().isEmpty()) {
-					field.setText("0.00");
-				}
-			}
-		});
 
 		createPayFinesPanel.add(createPayFinesPanelTop, BorderLayout.PAGE_START);
 
@@ -307,6 +289,7 @@ public class BorrowerTabPanel extends UserTabPanel {
 			showDefaultError();
 			return;
 		}
+		
 		
 		String result = LibrarySQLUtil.payFines(Integer.parseInt(borid), Integer.parseInt(amount));
 		if (result.contains(LibrarySQLUtil.SUCCESS_STRING)) {

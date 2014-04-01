@@ -838,7 +838,7 @@ public class LibrarySQLUtil {
 		int count, i = 0;
 		List<String[]> result = new ArrayList<String[]>();
 		try {
-			PreparedStatement ps = conn.prepareStatement("SELECT title, mainAuthor, borrowing.callNumber, COUNT(*) AS scount"
+			PreparedStatement ps = conn.prepareStatement("SELECT title, mainAuthor, borrowing.callNumber, COUNT(*) AS scount "
 														+ "FROM borrowing, book "
 														+ "WHERE borrowing.callNumber=book.callNumber AND TO_CHAR(outDate, 'mm/dd/yyyy') LIKE ? "
 														+ "GROUP BY title, mainAuthor, borrowing.callNumber "
